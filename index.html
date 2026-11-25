@@ -1,0 +1,2521 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+  <meta name="theme-color" content="#8b1e24" />
+  <meta name="description" content="Klasik ve Felsefi Latince Öğrenme Uygulaması — Alfabe, İsim & Fiil Çekimleri, Roma Sayıları, Okuma Atölyesi, Sözlük ve Sınav | Oğuz Bulut" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Latince" />
+
+  <!-- PWA Manifest & Uygulama Simgeleri -->
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
+  <link rel="apple-touch-icon" sizes="512x512" href="icon-512.png" />
+
+  <title>Latince Öğrenme Uygulaması | Oğuz Bulut</title>
+
+  <!-- Google Fonts: Cinzel + Cormorant Garamond + Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Cormorant+Garamond:ital,wght@0,600;0,700;1,600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <!-- Firebase Compat SDK (GitHub Pages Tek Dosya Uyumlu) -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+
+  <style>
+    :root {
+      --bg-marble: #f7f1e3;
+      --bg-parchment: #efe5d1;
+      --bg-card: #fffdf8;
+      --bg-card-2: #f4ebd9;
+      --crimson: #8b1e24;
+      --crimson-dark: #681318;
+      --crimson-soft: rgba(139, 30, 36, 0.08);
+      --gold: #b8860b;
+      --gold-light: #d4a017;
+      --gold-dim: rgba(184, 134, 11, 0.32);
+      --terracotta: #b45309;
+      --olive: #3f6212;
+      --text-main: #231815;
+      --text-muted: #5c4b43;
+      --danger: #b91c1c;
+      --success: #15803d;
+      --font-display: 'Cinzel', serif;
+      --font-latin: 'Cormorant Garamond', Georgia, serif;
+      --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+      --radius: 14px;
+      --shadow: 0 8px 26px rgba(68, 42, 24, 0.09);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background:
+        radial-gradient(circle at top left, rgba(255, 252, 245, 0.95) 0%, transparent 55%),
+        radial-gradient(circle at bottom right, rgba(226, 210, 181, 0.65) 0%, transparent 60%),
+        linear-gradient(180deg, #faf6ed 0%, var(--bg-marble) 50%, #ede1c9 100%);
+      color: var(--text-main);
+      font-family: var(--font-sans);
+      min-height: 100vh;
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    .latin-serif {
+      font-family: var(--font-latin);
+      letter-spacing: 0.02em;
+    }
+
+    /* Roman Imperial Crimson & Gold Header */
+    header {
+      background: linear-gradient(135deg, #7c191f 0%, #962128 55%, #6d1419 100%);
+      color: #fffdf8;
+      border-bottom: 3px solid var(--gold-light);
+      box-shadow: 0 6px 20px rgba(104, 19, 24, 0.24);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      padding: 0.85rem 1.25rem;
+    }
+
+    .header-inner {
+      max-width: 1220px;
+      margin: 0 auto;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .brand-emblem {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #fffaf0, #f3e6cc);
+      border: 2px solid var(--gold-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--crimson);
+      font-family: var(--font-display);
+      font-weight: 800;
+      font-size: 0.86rem;
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.22);
+      flex-shrink: 0;
+    }
+
+    .brand-text h1 {
+      font-family: var(--font-display);
+      font-size: 1.12rem;
+      color: #fff8e7;
+      letter-spacing: 0.03em;
+      line-height: 1.2;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+    }
+
+    .brand-text p {
+      font-size: 0.77rem;
+      color: #f6e4c1;
+    }
+
+    .brand-text p strong {
+      color: #ffe082 !important;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .btn {
+      border: 1px solid rgba(139, 30, 36, 0.28);
+      background: #fffdf8;
+      color: var(--text-main);
+      padding: 0.48rem 0.85rem;
+      border-radius: 10px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      transition: all 0.2s ease;
+      text-decoration: none;
+      box-shadow: 0 2px 6px rgba(68, 42, 24, 0.06);
+    }
+
+    header .btn {
+      background: rgba(255, 253, 248, 0.14);
+      border-color: rgba(255, 224, 130, 0.55);
+      color: #fffdf8;
+    }
+
+    header .btn:hover {
+      background: rgba(255, 253, 248, 0.24);
+      border-color: #ffe082;
+    }
+
+    header .btn span.latin-serif {
+      color: #ffe082 !important;
+    }
+
+    .btn:hover {
+      border-color: var(--crimson);
+      background: var(--bg-card-2);
+      transform: translateY(-1px);
+    }
+
+    .btn-gold {
+      background: linear-gradient(135deg, #c99416, #a37308);
+      color: #ffffff;
+      border-color: #e5b842;
+      font-weight: 700;
+    }
+
+    .btn-gold:hover {
+      background: linear-gradient(135deg, #d8a320, #b3800c);
+      color: #ffffff;
+    }
+
+    .btn-turquoise {
+      border-color: rgba(184, 134, 11, 0.55);
+      background: #fdf6e7;
+      color: var(--crimson);
+    }
+
+    .btn-turquoise:hover {
+      background: #f8ebd0;
+      border-color: var(--crimson);
+    }
+
+    header .btn-turquoise {
+      background: #fff8e7;
+      color: var(--crimson);
+      border-color: #ffe082;
+      font-weight: 700;
+    }
+
+    header .btn-turquoise:hover {
+      background: #ffffff;
+    }
+
+    .user-badge {
+      background: rgba(255, 250, 240, 0.16);
+      border: 1px solid rgba(255, 224, 130, 0.6);
+      color: #fffdf8;
+      padding: 0.35rem 0.78rem;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      cursor: pointer;
+    }
+
+    .user-badge .rank-pill {
+      background: #ffe082;
+      color: #5c1015;
+      font-weight: 700;
+      padding: 0.12rem 0.5rem;
+      border-radius: 999px;
+      font-size: 0.7rem;
+    }
+
+    /* Navigation Tabs */
+    .nav-wrap {
+      max-width: 1220px;
+      margin: 1rem auto 0;
+      padding: 0 1rem;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 0.45rem;
+      overflow-x: auto;
+      padding-bottom: 0.35rem;
+      scrollbar-width: thin;
+    }
+
+    .tab-btn {
+      background: var(--bg-card);
+      border: 1px solid rgba(139, 30, 36, 0.2);
+      color: var(--text-muted);
+      padding: 0.62rem 1rem;
+      border-radius: 11px;
+      font-size: 0.84rem;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      box-shadow: 0 2px 6px rgba(68, 42, 24, 0.05);
+    }
+
+    .tab-btn:hover {
+      color: var(--crimson);
+      border-color: var(--crimson);
+      background: #fff9ee;
+    }
+
+    .tab-btn.active {
+      background: linear-gradient(135deg, #8b1e24, #6e151a);
+      border-color: var(--gold);
+      color: #fffdf8;
+      box-shadow: 0 4px 12px rgba(139, 30, 36, 0.24);
+    }
+
+    /* Main Container */
+    main {
+      max-width: 1220px;
+      margin: 1rem auto 3rem;
+      padding: 0 1rem;
+    }
+
+    .panel { display: none; animation: fadeIn 0.25s ease; }
+    .panel.active { display: block; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid rgba(184, 134, 11, 0.32);
+      border-top: 3px solid var(--crimson);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      box-shadow: var(--shadow);
+      margin-bottom: 1.15rem;
+    }
+
+    .card-header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid rgba(184, 134, 11, 0.22);
+    }
+
+    .card-title {
+      font-family: var(--font-display);
+      font-size: 1.08rem;
+      color: var(--crimson);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .filter-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin-bottom: 1rem;
+    }
+
+    .pill {
+      background: var(--bg-parchment);
+      border: 1px solid rgba(139, 30, 36, 0.22);
+      color: var(--text-muted);
+      padding: 0.38rem 0.82rem;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .pill.active, .pill:hover {
+      border-color: var(--crimson);
+      color: #fffdf8;
+      background: var(--crimson);
+    }
+
+    /* Alphabet Grid */
+    .alpha-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(115px, 1fr));
+      gap: 0.65rem;
+    }
+
+    .alpha-card {
+      background: linear-gradient(180deg, #fffdf9 0%, #f5ebd8 100%);
+      border: 1px solid rgba(184, 134, 11, 0.35);
+      border-radius: 12px;
+      padding: 0.8rem 0.5rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 2px 8px rgba(68, 42, 24, 0.05);
+    }
+
+    .alpha-card:hover, .alpha-card.selected {
+      border-color: var(--crimson);
+      background: linear-gradient(180deg, #fffaf0 0%, #f2dec0 100%);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 18px rgba(139, 30, 36, 0.16);
+    }
+
+    .alpha-letter {
+      font-family: var(--font-display);
+      font-size: 1.65rem;
+      color: var(--crimson);
+      font-weight: 800;
+    }
+
+    .alpha-sound {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--gold);
+      margin-top: 0.15rem;
+    }
+
+    .alpha-ex {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      margin-top: 0.15rem;
+    }
+
+    .detail-banner {
+      background: linear-gradient(135deg, #fbf4e6, #f2e4ca);
+      border: 1.5px solid var(--crimson);
+      border-radius: 12px;
+      padding: 1rem 1.15rem;
+      margin-bottom: 1rem;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .detail-banner strong {
+      color: var(--crimson) !important;
+    }
+
+    .detail-banner p {
+      color: var(--text-main) !important;
+    }
+
+    .detail-banner p:last-child {
+      color: var(--terracotta) !important;
+      font-weight: 600;
+    }
+
+    .detail-glyph {
+      font-family: var(--font-display);
+      font-size: 2.35rem;
+      font-weight: 800;
+      color: var(--crimson);
+      background: #fffdf8;
+      border: 2px solid var(--gold);
+      border-radius: 12px;
+      width: 78px;
+      height: 78px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      box-shadow: 0 4px 12px rgba(139, 30, 36, 0.12);
+    }
+
+    /* Tables */
+    .table-wrap {
+      overflow-x: auto;
+      border-radius: 10px;
+      border: 1px solid rgba(184, 134, 11, 0.32);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.88rem;
+      background: #fffdf8;
+    }
+
+    th, td {
+      padding: 0.68rem 0.85rem;
+      text-align: left;
+      border-bottom: 1px solid rgba(184, 134, 11, 0.18);
+    }
+
+    th {
+      background: linear-gradient(180deg, #f3e6ce, #ead8b7);
+      color: var(--crimson);
+      font-family: var(--font-display);
+      font-size: 0.82rem;
+      font-weight: 700;
+    }
+
+    tr:nth-child(even) td {
+      background: rgba(247, 241, 227, 0.45);
+    }
+
+    td strong.latin-form {
+      color: var(--crimson);
+      font-family: var(--font-latin);
+      font-size: 1.12rem;
+    }
+
+    td strong[style*="var(--gold-light)"] {
+      color: var(--crimson) !important;
+    }
+
+    td[style*="var(--turquoise)"], td strong[style*="var(--turquoise)"] {
+      color: var(--terracotta) !important;
+    }
+
+    /* Inputs */
+    textarea, input[type="text"], input[type="password"], input[type="number"], select {
+      width: 100%;
+      background: #fffdf8;
+      border: 1.5px solid rgba(139, 30, 36, 0.26);
+      color: var(--text-main);
+      border-radius: 10px;
+      padding: 0.72rem 0.9rem;
+      font-family: var(--font-sans);
+      font-size: 0.94rem;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    textarea:focus, input:focus, select:focus {
+      border-color: var(--crimson);
+      box-shadow: 0 0 0 3px rgba(139, 30, 36, 0.1);
+    }
+
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    @media (max-width: 820px) {
+      .two-col { grid-template-columns: 1fr; }
+    }
+
+    .result-panel {
+      background: #faf3e6;
+      border: 1px solid rgba(184, 134, 11, 0.35);
+      border-radius: 12px;
+      padding: 1rem;
+    }
+
+    .result-panel strong[style*="var(--gold-light)"] {
+      color: var(--crimson) !important;
+    }
+
+    .result-panel span[style*="var(--turquoise)"], .result-panel strong[style*="var(--turquoise)"] {
+      color: var(--terracotta) !important;
+    }
+
+    .result-panel div[style*="var(--gold-light)"] {
+      color: var(--crimson) !important;
+    }
+
+    /* Reading Cards (Roman Marble Inscription Tablets) */
+    .reading-card {
+      background: linear-gradient(180deg, #fffdf8 0%, #f6eddc 100%);
+      border: 1px solid rgba(184, 134, 11, 0.38);
+      border-left: 4px solid var(--crimson);
+      border-radius: 14px;
+      padding: 1.15rem;
+      margin-bottom: 1rem;
+      box-shadow: 0 4px 14px rgba(68, 42, 24, 0.06);
+    }
+
+    .reading-meta {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .reading-meta strong {
+      color: var(--crimson) !important;
+    }
+
+    .badge {
+      background: #f5e6c8;
+      color: var(--crimson);
+      border: 1px solid rgba(184, 134, 11, 0.45);
+      padding: 0.22rem 0.68rem;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+
+    .latin-passage {
+      background: #f3e7d1;
+      border: 1px solid rgba(184, 134, 11, 0.38);
+      border-radius: 10px;
+      padding: 0.95rem 1.05rem;
+      font-family: var(--font-latin);
+      font-size: calc(1.3rem * var(--latin-scale, 1));
+      font-weight: 600;
+      line-height: 1.75;
+      color: #4a0e13;
+      margin-bottom: 0.7rem;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+    }
+
+    .tr-passage {
+      background: #fffdf9;
+      border-left: 3px solid var(--crimson);
+      padding: 0.72rem 0.95rem;
+      border-radius: 8px;
+      font-size: 0.92rem;
+      color: var(--text-main);
+      margin-bottom: 0.55rem;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+    }
+
+    .tr-passage strong {
+      color: var(--crimson) !important;
+    }
+
+    .gram-note {
+      background: rgba(184, 134, 11, 0.09);
+      border-left: 3px solid var(--gold);
+      padding: 0.65rem 0.9rem;
+      border-radius: 8px;
+      font-size: 0.84rem;
+      color: var(--text-muted);
+    }
+
+    .gram-note strong {
+      color: var(--terracotta) !important;
+    }
+
+    .hidden-layer { display: none !important; }
+
+    /* Quiz & Leaderboard */
+    .quiz-grid {
+      display: grid;
+      grid-template-columns: 1.45fr 1fr;
+      gap: 1rem;
+    }
+
+    @media (max-width: 860px) {
+      .quiz-grid { grid-template-columns: 1fr; }
+    }
+
+    #quizArea > div:first-child {
+      background: linear-gradient(135deg, #f8eedc, #efe0c4) !important;
+      border: 1.5px solid var(--gold) !important;
+    }
+
+    #quizArea > div:first-child .latin-serif {
+      color: var(--crimson) !important;
+    }
+
+    .quiz-option {
+      width: 100%;
+      text-align: left;
+      background: #fffdf8;
+      border: 1.5px solid rgba(139, 30, 36, 0.22);
+      color: var(--text-main);
+      padding: 0.78rem 1rem;
+      border-radius: 10px;
+      margin-bottom: 0.55rem;
+      cursor: pointer;
+      font-size: 0.92rem;
+      font-weight: 500;
+      transition: all 0.18s;
+    }
+
+    .quiz-option:hover:not(:disabled) {
+      border-color: var(--crimson);
+      background: #f9efd9;
+    }
+
+    .quiz-option.correct {
+      border-color: var(--success);
+      background: #dcfce7;
+      color: #14532d;
+      font-weight: 700;
+    }
+
+    .quiz-option.wrong {
+      border-color: var(--danger);
+      background: #fee2e2;
+      color: #7f1d1d;
+      font-weight: 600;
+    }
+
+    #dbStatusBadge {
+      color: var(--success) !important;
+      font-weight: 700;
+    }
+
+    .lb-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.58rem 0.78rem;
+      border-radius: 9px;
+      background: #faf3e6;
+      margin-bottom: 0.45rem;
+      border: 1px solid rgba(184, 134, 11, 0.25);
+      font-size: 0.85rem;
+    }
+
+    .lb-row.top-1 {
+      border-color: var(--crimson);
+      background: linear-gradient(135deg, #f9e8c8, #f3d9a8);
+    }
+
+    .lb-row strong {
+      color: var(--crimson) !important;
+    }
+
+    .lb-row span {
+      color: var(--terracotta) !important;
+      font-weight: 600;
+    }
+
+    /* Dictionary */
+    .dict-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(275px, 1fr));
+      gap: 0.65rem;
+    }
+
+    .dict-item {
+      background: #faf4e8;
+      border: 1px solid rgba(184, 134, 11, 0.28);
+      border-radius: 10px;
+      padding: 0.75rem 0.9rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+      transition: transform 0.15s, border-color 0.15s;
+    }
+
+    .dict-item:hover {
+      border-color: var(--crimson);
+      transform: translateY(-1px);
+    }
+
+    .dict-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 0.5rem;
+    }
+
+    .dict-word {
+      font-family: var(--font-latin);
+      font-weight: 700;
+      color: var(--crimson);
+      font-size: 1.15rem;
+    }
+
+    .dict-pos {
+      font-size: 0.72rem;
+      color: var(--terracotta);
+      font-weight: 700;
+    }
+
+    .dict-meaning {
+      font-size: 0.84rem;
+      color: var(--text-muted);
+    }
+
+    /* Modals (Marble & Crimson Gate) */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(35, 24, 21, 0.65);
+      backdrop-filter: blur(6px);
+      z-index: 100;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+
+    .modal-backdrop.open { display: flex; }
+
+    .gate-box {
+      background: linear-gradient(180deg, #fffdf8 0%, #f5ead6 100%);
+      border: 2.5px solid var(--crimson);
+      border-radius: 18px;
+      max-width: 440px;
+      width: 100%;
+      padding: 1.5rem;
+      box-shadow: 0 24px 60px rgba(35, 24, 21, 0.35);
+      color: var(--text-main);
+    }
+
+    .gate-box > div:first-child {
+      color: var(--gold) !important;
+    }
+
+    .gate-box h2 {
+      font-family: var(--font-display);
+      color: var(--crimson);
+      text-align: center;
+      font-size: 1.24rem;
+      margin-bottom: 0.3rem;
+    }
+
+    .gate-box .sub {
+      text-align: center;
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      margin-bottom: 1rem;
+    }
+
+    .form-group { margin-bottom: 0.75rem; }
+    .form-group label {
+      display: block;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 0.25rem;
+    }
+
+    .auth-msg {
+      font-size: 0.8rem;
+      margin-top: 0.5rem;
+      text-align: center;
+      min-height: 1.2em;
+      font-weight: 600;
+    }
+
+    #installModal .gate-box > div:nth-child(2) {
+      background: #f5ead6 !important;
+      border-color: var(--gold) !important;
+    }
+
+    #installModal strong[style*="var(--gold-light)"],
+    #installModal strong[style*="var(--turquoise)"] {
+      color: var(--crimson) !important;
+    }
+
+    #installModal div[style*="rgba(255,255,255,0.03)"] {
+      background: #fffdf8 !important;
+      border: 1px solid rgba(184, 134, 11, 0.28);
+      color: var(--text-main) !important;
+    }
+
+    /* Footer */
+    footer {
+      border-top: 3px solid var(--gold);
+      background: linear-gradient(135deg, #7c191f 0%, #681318 100%);
+      padding: 1.45rem 1rem;
+      text-align: center;
+      font-size: 0.82rem;
+      color: #f6e4c1;
+    }
+
+    .footer-inner {
+      max-width: 1220px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.65rem;
+    }
+
+    .copyright-line {
+      color: #ffe082;
+      font-weight: 700;
+    }
+
+    /* Audio & Pronunciation Controls */
+    .speak-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.25rem;
+      background: #fdf6e7;
+      border: 1px solid rgba(139, 30, 36, 0.35);
+      color: var(--crimson);
+      border-radius: 8px;
+      padding: 0.22rem 0.5rem;
+      font-size: 0.76rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.16s ease;
+      vertical-align: middle;
+    }
+    .speak-btn:hover {
+      background: var(--crimson);
+      color: #fffdf8;
+      border-color: var(--crimson);
+      transform: scale(1.04);
+    }
+    .speak-btn.speaking {
+      background: var(--gold);
+      color: #fffdf8;
+      border-color: var(--crimson);
+      animation: pulseSpeak 1s infinite;
+    }
+    @keyframes pulseSpeak {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(184, 134, 11, 0.45); }
+      50% { box-shadow: 0 0 0 6px rgba(184, 134, 11, 0); }
+    }
+    .phonetic-box {
+      background: #fffdf8;
+      border: 1.5px solid rgba(184, 134, 11, 0.42);
+      border-radius: 12px;
+      padding: 0.9rem 1rem;
+      margin-top: 0.65rem;
+    }
+    .phonetic-reading {
+      font-family: var(--font-latin);
+      font-size: 1.28rem;
+      font-weight: 700;
+      color: var(--crimson);
+      margin-top: 0.2rem;
+    }
+    .voice-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.45rem;
+      background: rgba(243, 231, 209, 0.65);
+      padding: 0.45rem 0.7rem;
+      border-radius: 10px;
+      border: 1px solid rgba(184, 134, 11, 0.28);
+    }
+
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="header-inner">
+      <div class="brand">
+        <div class="brand-emblem" title="Senatus Populusque Romanus">SPQR</div>
+        <div class="brand-text">
+          <h1>Klasik &amp; Felsefi Latince Öğrenme Uygulaması</h1>
+          <p>Hazırlayan: <strong style="color:var(--gold-light)">Oğuz Bulut</strong> · Alfabe, Çekimler, Sayılar, Felsefe Metinleri &amp; Sınav</p>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <button class="btn btn-turquoise" id="openInstallBtn" type="button">📲 Telefona Yükle</button>
+        <a class="btn" id="headerContactBtn" href="https://wa.me/905309082276?text=Salve%20O%C4%9Fuz%20Bey%2C%20Latince%20%C3%96%C4%9Frenme%20Uygulamas%C4%B1%20hakk%C4%B1nda%20yaz%C4%B1yorum." target="_blank" rel="noopener">
+          <span>Nuntius · İleti Gönder</span>
+          <span class="latin-serif" style="color:var(--gold-light);font-weight:700;">(Salve!)</span>
+        </a>
+        <div class="user-badge" id="userBadgeBtn" title="Hesap ve Rütbe Bilgisi">
+          <span id="headerUserName">Tiro (Konuk)</span>
+          <span class="rank-pill" id="headerUserRank">Tiro (0 P)</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="nav-wrap">
+    <nav class="tabs" role="tablist">
+      <button class="tab-btn active" data-tab="tab-alfabe">🏛 Alfabe &amp; Telaffuz</button>
+      <button class="tab-btn" data-tab="tab-isim">📜 İsim &amp; Sıfat Çekimleri</button>
+      <button class="tab-btn" data-tab="tab-fiil">⚡ Fiil Çekim Atölyesi</button>
+      <button class="tab-btn" data-tab="tab-sayi">🔢 Roma Sayıları &amp; Takvim</button>
+      <button class="tab-btn" data-tab="tab-metinler">📖 Felsefe &amp; Okuma Atölyesi</button>
+      <button class="tab-btn" data-tab="tab-sinav">🏆 Alıştırma &amp; Sınav</button>
+      <button class="tab-btn" data-tab="tab-sozluk">📚 Felsefi Latince Sözlük</button>
+    </nav>
+  </div>
+
+  <main>
+    <section class="panel active" id="tab-alfabe">
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">🏛 Klasik Latin Alfabesi (24 Harf) ve Klasik Filoloji Telaffuzu</h2>
+          <span style="font-size:0.8rem;color:var(--text-muted)">Telaffuz kuralını görmek için harfe tıklayın</span>
+        </div>
+
+        <div class="detail-banner" id="alphaDetailBox">
+          <div class="detail-glyph" id="alphaGlyph">C</div>
+          <div style="flex:1;min-width:220px;">
+            <strong id="alphaTitle" style="font-size:1.05rem;color:var(--gold-light);display:block;margin-bottom:0.2rem;">C, c → Daima "K" olarak okunur</strong>
+            <p id="alphaDesc" style="font-size:0.88rem;color:#e2e8f0;margin-bottom:0.3rem;">
+              Klasik Latincede C harfi ince ünlülerden (e, i) önce gelse bile hiçbir zaman 's' veya 'ç' okunmaz; her durumda sert 'k' sesi verir.
+            </p>
+            <p id="alphaEx" style="font-size:0.82rem;color:var(--turquoise);">
+              Örnekler: Cicero → Kikero · Cogito → Kogito · Caesar → Kaisar
+            </p>
+          </div>
+        </div>
+
+        
+        <!-- Canlı Klasik Telaffuz & Seslendirme Atölyesi -->
+        <div class="result-panel" style="margin-bottom:1.1rem;border:1.5px solid rgba(139, 30, 36, 0.32);">
+          <div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:0.5rem;margin-bottom:0.55rem;">
+            <strong style="color:var(--crimson);font-family:var(--font-display);font-size:0.96rem;">🔊 Canlı Klasik Latince Telaffuz &amp; Seslendirme Atölyesi</strong>
+            <div class="voice-toolbar">
+              <label style="font-size:0.76rem;color:var(--text-muted);font-weight:600;">Okuma Hızı:</label>
+              <select id="speechRateSelect" style="width:auto;padding:0.25rem 0.5rem;font-size:0.78rem;">
+                <option value="0.72">Yavaş (0.72x — Öğrenme)</option>
+                <option value="0.92" selected>Normal (0.92x — Klasik)</option>
+                <option value="1.12">Akıcı (1.12x)</option>
+              </select>
+              <button type="button" class="btn btn-gold" id="labSpeakBtn" style="padding:0.35rem 0.75rem;font-size:0.8rem;">🔊 Sesli Oku</button>
+              <button type="button" class="btn" id="labStopBtn" style="padding:0.35rem 0.65rem;font-size:0.8rem;">⏹ Durdur</button>
+            </div>
+          </div>
+          <input type="text" id="pronounceInput" value="Cogito, ergo sum. Cicero philosophiam amat." placeholder="Telaffuzunu duymak istediğiniz Latince kelime veya cümleyi yazın..." />
+          <div class="phonetic-box">
+            <span style="font-size:0.75rem;color:var(--terracotta);font-weight:700;">Klasik Filoloji Fonetik Okunuşu (Restituta):</span>
+            <div class="phonetic-reading" id="phoneticOutput">Kogito, ergo sum. Kikero filozofiam amat.</div>
+          </div>
+        </div>
+
+        <div class="alpha-grid" id="alphaGrid"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">🔊 Çift Sesliler (Diphthongi) ve Özel Okunuş Kuralları</h2>
+        </div>
+        <div class="two-col" id="diphthongGrid"></div>
+      </div>
+    </section>
+
+    <section class="panel" id="tab-isim">
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">📜 5 İsim Çekimi (Declinationes) ve İsmin 6 + 1 Hali</h2>
+          <div style="display:flex;gap:0.45rem;flex-wrap:wrap;">
+            <select id="declensionSelect" style="width:auto;min-width:260px;">
+              <option value="dec1">I. Çekim (-a / -ae, f.): philosophia, -ae (felsefe)</option>
+              <option value="dec2m">II. Çekim Eril (-us / -i, m.): philosophus, -i (filozof)</option>
+              <option value="dec2n">II. Çekim Cinssiz (-um / -i, n.): principium, -i (ilke)</option>
+              <option value="dec2er">II. Çekim -er (-er / -tri, m.): magister, -tri (öğretmen)</option>
+              <option value="dec3mf">III. Çekim Eril/Dişil (-is, f.): virtus, virtutis (erdem)</option>
+              <option value="dec3n">III. Çekim Cinssiz (-is, n.): corpus, corporis (beden)</option>
+              <option value="dec4">IV. Çekim (-us / -us, m.): spiritus, -us (ruh, soluk)</option>
+              <option value="dec5">V. Çekim (-es / -ei, f.): res, rei (şey, olgu, gerçeklik)</option>
+            </select>
+          </div>
+        </div>
+
+        <p id="declensionNote" style="font-size:0.86rem;color:var(--text-muted);margin-bottom:0.85rem;"></p>
+
+        <div class="table-wrap" id="declensionTableWrap"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">⚖️ İsmin Halleri (Casus) ve Cümledeki Görevleri</h2>
+        </div>
+        <div class="table-wrap" id="casesOverviewWrap"></div>
+      </div>
+    </section>
+
+    <section class="panel" id="tab-fiil">
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">⚡ 4 Düzenli Fiil Çekimi ve ESSE (Olmak / Var Olmak)</h2>
+          <div style="display:flex;gap:0.45rem;flex-wrap:wrap;">
+            <select id="verbConjSelect" style="width:auto;min-width:250px;">
+              <option value="esse">Kuralsız: sum, esse, fui (olmak, var olmak)</option>
+              <option value="c1">I. Çekim (-are): cogito, cogitare, cogitavi (düşünmek)</option>
+              <option value="c2">II. Çekim (-ēre): moneo, monere, monui (uyarmak)</option>
+              <option value="c3">III. Çekim (-ere): lego, legere, legi (okumak)</option>
+              <option value="c4">IV. Çekim (-ire): audio, audire, audivi (işitmek)</option>
+            </select>
+            <select id="verbVoiceSelect" style="width:auto;">
+              <option value="act">Etken Çatı (Activa)</option>
+              <option value="pass">Edilgen Çatı (Passiva)</option>
+            </select>
+          </div>
+        </div>
+
+        <p id="verbInfoNote" style="font-size:0.86rem;color:var(--text-muted);margin-bottom:0.85rem;"></p>
+
+        <div class="table-wrap" id="verbTableWrap"></div>
+      </div>
+    </section>
+
+    <section class="panel" id="tab-sayi">
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">🔢 Roma Rakamları ve Latince Sayı Adları Dönüştürücü (1 – 3999)</h2>
+          <span style="font-size:0.8rem;color:var(--text-muted)">Temel sayı, sıra sayısı ve Roma rakamı karşılığı</span>
+        </div>
+
+        <div style="display:flex;flex-wrap:wrap;gap:0.75rem;align-items:center;margin-bottom:0.85rem;">
+          <div style="flex:1;min-width:200px;">
+            <input type="number" id="romanNumInput" min="1" max="3999" value="1637" placeholder="1 ile 3999 arası sayı girin..." />
+          </div>
+          <div style="display:flex;gap:0.4rem;flex-wrap:wrap;">
+            <button class="pill" data-rnum="1">1 (unus)</button>
+            <button class="pill" data-rnum="18">18 (duodeviginti)</button>
+            <button class="pill" data-rnum="42">42 (XLII)</button>
+            <button class="pill" data-rnum="753">753 (Roma'nın kuruluşu)</button>
+            <button class="pill" data-rnum="1637">1637 (Discours de la Méthode)</button>
+          </div>
+        </div>
+
+        <div class="two-col" id="romanResultBox"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">📅 Roma Takvimi (Kalendae, Nonae, Idus) ve Günler</h2>
+        </div>
+        <div class="two-col" id="calendarInfoBox"></div>
+      </div>
+    </section>
+
+    <section class="panel" id="tab-metinler">
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">📖 Latince Okuma ve Felsefe Metinleri Atölyesi</h2>
+          <div style="display:flex;flex-wrap:wrap;gap:0.45rem;align-items:center;">
+            <button class="btn" id="latFontDecBtn" type="button">A−</button>
+            <span id="latFontScaleLabel" style="font-size:0.78rem;color:var(--gold-light);min-width:42px;text-align:center;">%100</span>
+            <button class="btn" id="latFontIncBtn" type="button">A+</button>
+            <button class="btn btn-turquoise" id="toggleTrTextBtn" type="button">👁 Türkçe Çeviri: Açık</button>
+            <button class="btn" id="toggleGramNoteBtn" type="button">👁 Gramer Çözümlemesi: Açık</button>
+          </div>
+        </div>
+
+        <div class="filter-row" id="readingCatFilters">
+          <button class="pill active" data-rcat="all">Tümü (10 Metin)</button>
+          <button class="pill" data-rcat="giris">Başlangıç &amp; Diyaloglar</button>
+          <button class="pill" data-rcat="felsefe">Descartes, Spinoza &amp; Antik Felsefe</button>
+          <button class="pill" data-rcat="ozdeyis">Altın Özdeyişler (Sententiae)</button>
+        </div>
+
+        <div id="readingsContainer"></div>
+      </div>
+    </section>
+
+    <section class="panel" id="tab-sinav">
+      <div class="quiz-grid">
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">🎯 Latince Alıştırma &amp; Sınav</h2>
+            <span id="quizScoreBadge" class="badge">Puan: 0 · Seri: 0</span>
+          </div>
+
+          <div class="filter-row" id="quizModeRow">
+            <button class="pill active" data-qmode="sozluk">1. Felsefi Kavramlar</button>
+            <button class="pill" data-qmode="cekim">2. İsim &amp; Fiil Çekimi</button>
+            <button class="pill" data-qmode="sayi">3. Roma Rakamları</button>
+            <button class="pill" data-qmode="ozdeyis">4. Özdeyiş Çevirisi</button>
+          </div>
+
+          <div id="quizArea"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">🏆 Canlı Liderlik Tablosu</h2>
+            <span id="dbStatusBadge" style="font-size:0.74rem;color:var(--turquoise);">● Bulut Bağlı</span>
+          </div>
+          <p style="font-size:0.8rem;color:var(--text-muted);margin-bottom:0.75rem;">
+            Rütbeler: <em>Tiro (Çırak) → Discipulus (Öğrenci) → Grammaticus → Philosophus → Magister</em>
+          </p>
+          <div id="leaderboardList"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel" id="tab-sozluk">
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">📚 Latince – Türkçe Felsefe ve Gramer Sözlüğü</h2>
+          <span id="dictCountBadge" class="badge">0 Sözcük</span>
+        </div>
+
+        <div style="margin-bottom:0.9rem;">
+          <input type="text" id="dictSearchInput" placeholder="Latince kelime veya Türkçe anlam ara (ör. cogito, substantia, ratio, virtus, animus, veritas...)" />
+        </div>
+
+        <div class="dict-grid" id="dictGrid"></div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+      <div class="copyright-line">
+        © 2026 Oğuz Bulut — Tüm Hakları Saklıdır. İzinsiz kopyalanamaz ve çoğaltılamaz.
+      </div>
+      <div>
+        Klasik Latince grameri ve felsefi metin okuma geleneği esas alınarak hazırlanmıştır.
+      </div>
+      <div>
+        <a class="btn btn-gold" id="footerContactBtn" href="https://wa.me/905309082276?text=Salve%20O%C4%9Fuz%20Bey%2C%20Latince%20%C3%96%C4%9Frenme%20Uygulamas%C4%B1%20hakk%C4%B1nda%20yaz%C4%B1yorum." target="_blank" rel="noopener">
+          <span>Nuntius · İleti Gönder</span>
+          <span class="latin-serif" style="font-weight:700;">(Salve!)</span>
+        </a>
+      </div>
+    </div>
+  </footer>
+
+  <div class="modal-backdrop open" id="authModal">
+    <div class="gate-box">
+      <div style="text-align:center;font-family:var(--font-display);font-size:1.35rem;color:var(--gold-light);margin-bottom:0.2rem;">
+        SPQR · COGITO, ERGO SUM
+      </div>
+      <h2>Akademia Giriş Kapısı</h2>
+      <p class="sub">İlerlemenizi, rütbenizi ve sınav puanlarınızı bulutta saklamak için giriş yapın veya konuk olarak devam edin.</p>
+
+      <div class="form-group">
+        <label for="authRumuz">Rumuz (Nomen)</label>
+        <input type="text" id="authRumuz" placeholder="Örn: Renatus veya Oguz" maxlength="24" />
+      </div>
+
+      <div class="form-group">
+        <label for="authPin">Parola / PIN</label>
+        <input type="password" id="authPin" placeholder="En az 4 karakter (Örn: 1637)" maxlength="24" />
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;margin-top:0.85rem;">
+        <button class="btn btn-gold" id="loginRumuzBtn" type="button" style="justify-content:center;">Giriş Yap</button>
+        <button class="btn" id="registerRumuzBtn" type="button" style="justify-content:center;">Yeni Kayıt Ol</button>
+      </div>
+
+      <div style="margin-top:0.65rem;display:flex;flex-direction:column;gap:0.5rem;">
+        <button class="btn btn-turquoise" id="googleLoginBtn" type="button" style="justify-content:center;">
+          🌐 Google Hesabı ile Giriş Yap
+        </button>
+        <button class="btn" id="guestLoginBtn" type="button" style="justify-content:center;color:var(--text-muted);">
+          Tiro (Konuk) Olarak Devam Et →
+        </button>
+      </div>
+
+      <div class="auth-msg" id="authMsg"></div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="installModal">
+    <div class="gate-box">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.65rem;">
+        <strong style="font-family:var(--font-display);color:var(--gold-light);font-size:1.05rem;">📲 Telefona Uygulama Olarak Yükle</strong>
+        <button class="btn" id="closeInstallBtn" type="button" style="padding:0.25rem 0.6rem;">✕</button>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:0.85rem;background:var(--bg-imperial);padding:0.8rem;border-radius:12px;border:1px solid var(--gold-dim);margin-bottom:0.85rem;">
+        <img src="icon-192.png" alt="Latince Simgesi" style="width:58px;height:58px;border-radius:14px;border:1px solid var(--gold);" />
+        <div>
+          <strong style="color:var(--gold-light);display:block;">Latince Öğrenme Uygulaması</strong>
+          <span style="font-size:0.78rem;color:var(--text-muted);">Ana ekrana simge olarak eklenir ve tam ekran çalışır.</span>
+        </div>
+      </div>
+
+      <button class="btn btn-gold" id="nativeInstallBtn" type="button" style="width:100%;justify-content:center;margin-bottom:0.75rem;display:none;">
+        ⚡ Tek Dokunuşla Ana Ekrana Yükle
+      </button>
+
+      <div style="font-size:0.83rem;color:#e2e8f0;display:flex;flex-direction:column;gap:0.6rem;">
+        <div style="background:rgba(255,255,255,0.03);padding:0.65rem;border-radius:9px;">
+          <strong style="color:var(--turquoise);">🤖 Android (Chrome):</strong>
+          Sağ üstteki <strong>⋮ (üç nokta)</strong> menüsüne dokunun → <strong>"Uygulamayı yükle"</strong> veya <strong>"Ana ekrana ekle"</strong> deyin.
+        </div>
+        <div style="background:rgba(255,255,255,0.03);padding:0.65rem;border-radius:9px;">
+          <strong style="color:var(--gold-light);">🍎 iPhone / iPad (Safari):</strong>
+          Alt çubuktaki <strong>Paylaş (kare içinde yukarı ok)</strong> simgesine dokunun → <strong>"Ana Ekrana Ekle"</strong> deyin.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const FIREBASE_CONFIG = {
+      apiKey: "AIzaSyCHjdG7qTqLJ6cj7lZrGahsaJ3ELwezGWc",
+      authDomain: "gokturk-yazisi.firebaseapp.com",
+      databaseURL: "https://gokturk-yazisi-default-rtdb.firebaseio.com",
+      projectId: "gokturk-yazisi",
+      storageBucket: "gokturk-yazisi.firebasestorage.app",
+      messagingSenderId: "108218600901",
+      appId: "1:108218600901:web:2f9d76099e0b18f79c8fac"
+    };
+
+    const WHATSAPP_NO = "905309082276";
+
+    (function setupContactLinks() {
+      const msg = encodeURIComponent("Salve Oğuz Bey, Latince Öğrenme Uygulaması hakkında yazıyorum.");
+      const url = `https://wa.me/${WHATSAPP_NO}?text=${msg}`;
+      document.getElementById("headerContactBtn").href = url;
+      document.getElementById("footerContactBtn").href = url;
+    })();
+
+    let fbAuth = null;
+    let fbDb = null;
+    let currentUser = {
+      uid: "guest_local",
+      rumuz: "Tiro (Konuk)",
+      puan: 0,
+      dogru: 0,
+      cozulen: 0,
+      isGuest: true
+    };
+
+    function getRank(puan) {
+      if (puan >= 500) return "Magister";
+      if (puan >= 300) return "Philosophus";
+      if (puan >= 150) return "Grammaticus";
+      if (puan >= 50) return "Discipulus";
+      return "Tiro";
+    }
+
+    function updateUserUI() {
+      const rank = getRank(currentUser.puan || 0);
+      document.getElementById("headerUserName").textContent = currentUser.rumuz || "Tiro (Konuk)";
+      document.getElementById("headerUserRank").textContent = `${rank} (${currentUser.puan || 0} P)`;
+    }
+
+    function loadLocalProfile() {
+      try {
+        const saved = localStorage.getItem("latince_user_profile");
+        if (saved) {
+          currentUser = { ...currentUser, ...JSON.parse(saved) };
+          updateUserUI();
+        }
+      } catch (e) {}
+    }
+
+    function saveLocalProfile() {
+      try {
+        localStorage.setItem("latince_user_profile", JSON.stringify(currentUser));
+      } catch (e) {}
+    }
+
+    async function syncScoreToCloud(addedPoints, isCorrect) {
+      currentUser.puan = (currentUser.puan || 0) + addedPoints;
+      currentUser.cozulen = (currentUser.cozulen || 0) + 1;
+      if (isCorrect) currentUser.dogru = (currentUser.dogru || 0) + 1;
+      updateUserUI();
+      saveLocalProfile();
+
+      if (fbDb && currentUser.uid && !currentUser.isGuest) {
+        const rank = getRank(currentUser.puan);
+        try {
+          await fbDb.ref("latince_kullanicilar/" + currentUser.uid).update({
+            rumuz: currentUser.rumuz,
+            puan: currentUser.puan,
+            dogru: currentUser.dogru,
+            cozulen: currentUser.cozulen,
+            rutbe: rank,
+            guncelleme: Date.now()
+          });
+          await fbDb.ref("latince_liderlik/" + currentUser.uid).set({
+            rumuz: currentUser.rumuz,
+            puan: currentUser.puan,
+            rutbe: rank
+          });
+        } catch (err) {}
+      }
+      renderLocalFallbackLeaderboard();
+    }
+
+    function renderLeaderboardRows(items) {
+      const box = document.getElementById("leaderboardList");
+      if (!items || items.length === 0) {
+        box.innerHTML = `<div style="font-size:0.82rem;color:var(--text-muted);">Henüz kayıtlı puan bulunmuyor. İlk testi çözerek zirveye yerleşin!</div>`;
+        return;
+      }
+      box.innerHTML = items.map((item, idx) => `
+        <div class="lb-row ${idx === 0 ? "top-1" : ""}">
+          <div>
+            <strong style="color:${idx === 0 ? "var(--gold-light)" : "var(--text-main)"}">#${idx + 1} ${escapeHtml(item.rumuz || "Discipulus")}</strong>
+            <span style="font-size:0.74rem;color:var(--turquoise);margin-left:0.4rem;">${escapeHtml(item.rutbe || getRank(item.puan || 0))}</span>
+          </div>
+          <strong style="color:var(--gold-light);">${item.puan || 0} P</strong>
+        </div>
+      `).join("");
+    }
+
+    function renderLocalFallbackLeaderboard() {
+      if (fbDb) return;
+      renderLeaderboardRows([
+        { rumuz: currentUser.rumuz, puan: currentUser.puan || 0, rutbe: getRank(currentUser.puan || 0) },
+        { rumuz: "Renatus_Descartes", puan: 460, rutbe: "Philosophus" },
+        { rumuz: "M_Tullius_Cicero", puan: 380, rutbe: "Philosophus" }
+      ].sort((a, b) => b.puan - a.puan));
+    }
+
+    async function applyLoggedInUser(user) {
+      if (!user) return;
+      const fallbackName = user.displayName || (user.email ? user.email.split("@")[0] : "Discipulus");
+      currentUser = {
+        uid: user.uid,
+        rumuz: fallbackName,
+        puan: currentUser.puan || 0,
+        dogru: currentUser.dogru || 0,
+        cozulen: currentUser.cozulen || 0,
+        isGuest: false
+      };
+
+      updateUserUI();
+      saveLocalProfile();
+      document.getElementById("authModal").classList.remove("open");
+      document.getElementById("authMsg").textContent = "";
+
+      if (fbDb) {
+        try {
+          const snap = await fbDb.ref("latince_kullanicilar/" + user.uid).once("value");
+          if (snap.exists()) {
+            const d = snap.val();
+            currentUser.rumuz = d.rumuz || fallbackName;
+            currentUser.puan = d.puan || 0;
+            currentUser.dogru = d.dogru || 0;
+            currentUser.cozulen = d.cozulen || 0;
+          } else {
+            await fbDb.ref("latince_kullanicilar/" + user.uid).set({
+              rumuz: currentUser.rumuz,
+              puan: 0,
+              dogru: 0,
+              cozulen: 0,
+              rutbe: "Tiro"
+            });
+          }
+          updateUserUI();
+          saveLocalProfile();
+        } catch (e) {}
+      }
+    }
+
+    function initFirebase() {
+      const statusBadge = document.getElementById("dbStatusBadge");
+      const msg = document.getElementById("authMsg");
+      try {
+        if (!firebase.apps.length) {
+          firebase.initializeApp(FIREBASE_CONFIG);
+        }
+        fbAuth = firebase.auth();
+        fbDb = firebase.database();
+
+        fbAuth.getRedirectResult()
+          .then((result) => {
+            if (result && result.user) applyLoggedInUser(result.user);
+          })
+          .catch((err) => {
+            if (err && err.code) {
+              msg.style.color = "var(--danger)";
+              msg.textContent = "Google doğrulama hatası: " + err.message;
+            }
+          });
+
+        fbAuth.onAuthStateChanged((user) => {
+          if (user) applyLoggedInUser(user);
+        });
+
+        fbDb.ref("latince_liderlik").orderByChild("puan").limitToLast(12).on("value", (snapshot) => {
+          const list = [];
+          snapshot.forEach((child) => list.push(child.val()));
+          list.sort((a, b) => (b.puan || 0) - (a.puan || 0));
+          renderLeaderboardRows(list);
+          statusBadge.textContent = "● Bulut Bağlı";
+          statusBadge.style.color = "var(--turquoise)";
+        }, () => {
+          statusBadge.textContent = "● Yerel Mod";
+          statusBadge.style.color = "var(--gold-light)";
+          fbDb = null;
+          renderLocalFallbackLeaderboard();
+        });
+      } catch (err) {
+        statusBadge.textContent = "● Yerel Mod";
+        fbDb = null;
+        renderLocalFallbackLeaderboard();
+      }
+    }
+
+    function rumuzToEmail(rumuz) {
+      const slug = rumuz.trim().toLowerCase()
+        .replace(/ğ/g, "g").replace(/ü/g, "u").replace(/ş/g, "s")
+        .replace(/ı/g, "i").replace(/ö/g, "o").replace(/ç/g, "c")
+        .replace(/[^a-z0-9_]/g, "");
+      return (slug || "discipulus") + "@latince-akademia.local";
+    }
+
+    function padPassword(pin) {
+      return pin.trim() + "_lat2026";
+    }
+
+    document.getElementById("loginRumuzBtn").addEventListener("click", async () => {
+      const rumuz = document.getElementById("authRumuz").value.trim();
+      const pin = document.getElementById("authPin").value.trim();
+      const msg = document.getElementById("authMsg");
+      if (!rumuz || pin.length < 4) {
+        msg.style.color = "var(--danger)";
+        msg.textContent = "Lütfen rumuz ve en az 4 karakterli parola girin.";
+        return;
+      }
+      if (!fbAuth) {
+        currentUser = { uid: "local_" + rumuz, rumuz, puan: currentUser.puan || 0, isGuest: false };
+        updateUserUI();
+        saveLocalProfile();
+        document.getElementById("authModal").classList.remove("open");
+        return;
+      }
+      msg.style.color = "var(--turquoise)";
+      msg.textContent = "Giriş yapılıyor...";
+      try {
+        const cred = await fbAuth.signInWithEmailAndPassword(rumuzToEmail(rumuz), padPassword(pin));
+        await applyLoggedInUser(cred.user);
+      } catch (e) {
+        msg.style.color = "var(--danger)";
+        msg.textContent = "Giriş başarısız. İlk kez geliyorsanız 'Yeni Kayıt Ol' düğmesine basın.";
+      }
+    });
+
+    document.getElementById("registerRumuzBtn").addEventListener("click", async () => {
+      const rumuz = document.getElementById("authRumuz").value.trim();
+      const pin = document.getElementById("authPin").value.trim();
+      const msg = document.getElementById("authMsg");
+      if (!rumuz || pin.length < 4) {
+        msg.style.color = "var(--danger)";
+        msg.textContent = "Lütfen rumuz ve en az 4 karakterli parola girin.";
+        return;
+      }
+      if (!fbAuth) {
+        currentUser = { uid: "local_" + rumuz, rumuz, puan: 0, isGuest: false };
+        updateUserUI();
+        saveLocalProfile();
+        document.getElementById("authModal").classList.remove("open");
+        return;
+      }
+      msg.style.color = "var(--turquoise)";
+      msg.textContent = "Kaydınız oluşturuluyor...";
+      try {
+        const cred = await fbAuth.createUserWithEmailAndPassword(rumuzToEmail(rumuz), padPassword(pin));
+        await cred.user.updateProfile({ displayName: rumuz });
+        currentUser.rumuz = rumuz;
+        await applyLoggedInUser(cred.user);
+      } catch (e) {
+        msg.style.color = "var(--danger)";
+        msg.textContent = "Kayıt hatası: " + (e.code === "auth/email-already-in-use" ? "Bu rumuz zaten kayıtlı." : e.message);
+      }
+    });
+
+    document.getElementById("googleLoginBtn").addEventListener("click", async () => {
+      const msg = document.getElementById("authMsg");
+      if (!fbAuth) return;
+      msg.style.color = "var(--turquoise)";
+      msg.textContent = "Google penceresi açılıyor...";
+      const provider = new firebase.auth.GoogleAuthProvider();
+      provider.setCustomParameters({ prompt: "select_account" });
+      try {
+        const result = await fbAuth.signInWithPopup(provider);
+        if (result && result.user) await applyLoggedInUser(result.user);
+      } catch (e) {
+        if (e.code === "auth/popup-blocked" || e.code === "auth/operation-not-supported-in-this-environment") {
+          fbAuth.signInWithRedirect(provider);
+        } else {
+          msg.style.color = "var(--danger)";
+          msg.textContent = "Google girişi hatası (" + e.code + "). Konuk olarak devam edebilirsiniz.";
+        }
+      }
+    });
+
+    document.getElementById("guestLoginBtn").addEventListener("click", () => {
+      const rumuz = document.getElementById("authRumuz").value.trim() || "Tiro (Konuk)";
+      currentUser = { uid: "guest_local", rumuz, puan: currentUser.puan || 0, isGuest: true };
+      updateUserUI();
+      saveLocalProfile();
+      document.getElementById("authModal").classList.remove("open");
+    });
+
+    document.getElementById("userBadgeBtn").addEventListener("click", () => {
+      document.getElementById("authModal").classList.add("open");
+    });
+
+    let deferredPrompt = null;
+    window.addEventListener("beforeinstallprompt", (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      document.getElementById("nativeInstallBtn").style.display = "inline-flex";
+    });
+    document.getElementById("openInstallBtn").addEventListener("click", () => document.getElementById("installModal").classList.add("open"));
+    document.getElementById("closeInstallBtn").addEventListener("click", () => document.getElementById("installModal").classList.remove("open"));
+    document.getElementById("nativeInstallBtn").addEventListener("click", async () => {
+      if (!deferredPrompt) return;
+      deferredPrompt.prompt();
+      await deferredPrompt.userChoice;
+      deferredPrompt = null;
+      document.getElementById("nativeInstallBtn").style.display = "none";
+    });
+
+    document.querySelectorAll(".tab-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".tab-btn").forEach((b) => b.classList.remove("active"));
+        document.querySelectorAll(".panel").forEach((p) => p.classList.remove("active"));
+        btn.classList.add("active");
+        document.getElementById(btn.dataset.tab).classList.add("active");
+      });
+    });
+
+    function escapeHtml(str) {
+      return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+    }
+
+    const LATIN_ALPHABET = [
+      { l: "A", s: "a", ex: "anima (ruh)", d: "Türkçedeki düz ve geniş 'a' sesi gibi okunur; uzun (ā) veya kısa (ă) olabilir." },
+      { l: "B", s: "b", ex: "bonus (iyi)", d: "Türkçedeki 'b' sesiyle aynıdır." },
+      { l: "C", s: "k", ex: "Cicero (Kikero)", d: "Klasik Latincede C harfi hangi ünlüden önce gelirse gelsin DAİMA sert 'k' sesi verir." },
+      { l: "D", s: "d", ex: "deus (tanrı)", d: "Türkçedeki 'd' sesiyle aynıdır." },
+      { l: "E", s: "e", ex: "ergo (öyleyse)", d: "Türkçedeki açık 'e' sesi gibi okunur." },
+      { l: "F", s: "f", ex: "fama (ün)", d: "Türkçedeki 'f' sesiyle aynıdır; ayrıca 'ph' birleşimi de 'f' okunur (philosophia → filozofia)." },
+      { l: "G", s: "g", ex: "gloria (şan)", d: "Daima sert 'g' okunur; hiçbir zaman 'ğ' veya 'c' gibi yumuşamaz." },
+      { l: "H", s: "h", ex: "homo (insan)", d: "Türkçedeki nefesli 'h' sesi gibi okunur." },
+      { l: "I", s: "i / y", ex: "Iupiter (Yupiter)", d: "Ünsüzlerin yanında sesli 'i', sözcük başında veya iki ünlü arasında yarı sesli 'y' (J karşılığı) okunur." },
+      { l: "K", s: "k", ex: "Kalendae (ay başı)", d: "Yalnızca Kalendae gibi çok az sayıda arkaik kelimenin başında görülür ve 'k' okunur." },
+      { l: "L", s: "l", ex: "lex (kanun)", d: "Türkçedeki 'l' sesiyle aynıdır." },
+      { l: "M", s: "m", ex: "mens (zihin)", d: "Türkçedeki 'm' sesiyle aynıdır." },
+      { l: "N", s: "n", ex: "natura (doğa)", d: "Türkçedeki 'n' sesiyle aynıdır." },
+      { l: "O", s: "o", ex: "ordo (düzen)", d: "Türkçedeki 'o' sesi gibi okunur." },
+      { l: "P", s: "p", ex: "pax (barış)", d: "Türkçedeki 'p' sesiyle aynıdır." },
+      { l: "Q", s: "kwu", ex: "quidditas (nelik)", d: "Daima kendisinden sonra gelen 'u' harfiyle birlikte 'kv/kwu' biçiminde yuvarlak okunur." },
+      { l: "R", s: "r", ex: "ratio (akıl)", d: "Türkçedeki titreşimli 'r' sesiyle aynıdır." },
+      { l: "S", s: "s", ex: "sapientia (bilgelik)", d: "İki ünlü arasında bile kalsa daima sert 's' okunur; hiçbir zaman 'z'leşmez." },
+      { l: "T", s: "t", ex: "tempus (zaman)", d: "İnce ünlülerle bile daima 't' okunur (natio → natio, 'nasyo' değil)." },
+      { l: "U", s: "u", ex: "unitas (birlik)", d: "Ortaçağda V harfinden ayrılarak yalnızca sesli 'u' için kullanılmaya başlanmıştır." },
+      { l: "V", s: "v / u", ex: "veritas (hakikat)", d: "Klasik dönemde sesli 'u' ve yarı sesli 'w/v' yerine geçer; günümüz metinlerinde 'v' okunur." },
+      { l: "X", s: "ks", ex: "exemplum (örnek)", d: "Çift sessiz harftir; 'k + s' birleşimi olarak okunur." },
+      { l: "Y", s: "ü", ex: "lyra (lüra)", d: "İÖ 1. yüzyılda Yunancadan geçen kelimeler için alfabeye alınmıştır; 'ü' sesi verir." },
+      { l: "Z", s: "z", ex: "Zeno (Zenon)", d: "Yunanca kökenli kelimelerde yer alan çift sessizdir; 'z' okunur." }
+    ];
+
+
+    /* =====================================================================
+       KLASİK LATİNCE FONETİK ÇÖZÜMLEYİCİ & SESLENDİRME MOTORU (Web Speech)
+       ===================================================================== */
+    function toClassicalPhonetic(text) {
+      if (!text) return "";
+      let s = String(text);
+
+      // Uzunluk işaretlerini (macron) sadeleştir
+      const macronMap = { "ā": "a", "ē": "e", "ī": "i", "ō": "o", "ū": "u", "Ā": "A", "Ē": "E", "Ī": "I", "Ō": "O", "Ū": "U" };
+      s = s.replace(/[āēīōūĀĒĪŌŪ]/g, (m) => macronMap[m] || m);
+
+      // Çift sessiz ve özel ikililer
+      s = s.replace(/ph/gi, (m) => (m[0] === "P" ? "F" : "f"));
+      s = s.replace(/ch/gi, (m) => (m[0] === "C" ? "Kh" : "kh"));
+      s = s.replace(/th/gi, (m) => (m[0] === "T" ? "T" : "t"));
+      s = s.replace(/qu/gi, (m) => (m[0] === "Q" ? "Kv" : "kv"));
+
+      // C harfi klasik Latincede daima K okunur
+      s = s.replace(/c/g, "k").replace(/C/g, "K");
+
+      // X -> ks
+      s = s.replace(/x/g, "ks").replace(/X/g, "Ks");
+
+      // Y (Yunanca ödünç kelimeler) -> ü
+      s = s.replace(/y/g, "ü").replace(/Y/g, "Ü");
+
+      // Çift sesliler (Diphthongi): ae->ay, au->av, oe->oy, eu->ev
+      s = s.replace(/ae/gi, (m) => (m[0] === "A" ? "Ay" : "ay"));
+      s = s.replace(/au/gi, (m) => (m[0] === "A" ? "Av" : "av"));
+      s = s.replace(/oe/gi, (m) => (m[0] === "O" ? "Oy" : "oy"));
+      s = s.replace(/eu/gi, (m) => (m[0] === "E" ? "Ev" : "ev"));
+
+      // Sözcük başında veya iki ünlü arasında I -> Y (Iupiter -> Yupiter, maior -> mayor)
+      s = s.replace(/\bI([aeiouAEIOUüÜ])/g, "Y$1").replace(/\bi([aeiouAEIOUüÜ])/g, "y$1");
+      s = s.replace(/([aeiouAEIOUüÜ])i([aeiouAEIOUüÜ])/g, "$1y$2");
+
+      return s;
+    }
+
+    function speakLatin(rawText, btnEl = null, customRate = null) {
+      if (!("speechSynthesis" in window)) {
+        alert("Tarayıcınız sesli okuma özelliğini desteklemiyor.");
+        return;
+      }
+      window.speechSynthesis.cancel();
+      document.querySelectorAll(".speak-btn.speaking").forEach((b) => b.classList.remove("speaking"));
+
+      // Klasik okunuş fonetiğini Türkçe/İspanyolca/İtalyanca sese en doğal duyulacak biçimde hazırla
+      let phonetic = toClassicalPhonetic(rawText)
+        .replace(/\(.*?\)/g, "") // Parantez içi açıklamaları okuma
+        .replace(/[,;·—–]/g, ", ")
+        .trim();
+
+      if (!phonetic) return;
+
+      const utter = new SpeechSynthesisUtterance(phonetic);
+      const voices = window.speechSynthesis.getVoices();
+      // Klasik fonetik (K, Ay, Av, Ü) Türkçenin ses dizgesiyle birebir örtüştüğü için tr-TR veya es-ES sesi en temiz klasik telaffuzu verir
+      const preferredVoice =
+        voices.find((v) => v.lang && v.lang.toLowerCase().startsWith("tr")) ||
+        voices.find((v) => v.lang && v.lang.toLowerCase().startsWith("es")) ||
+        voices.find((v) => v.lang && v.lang.toLowerCase().startsWith("it")) ||
+        voices[0];
+
+      if (preferredVoice) {
+        utter.voice = preferredVoice;
+        utter.lang = preferredVoice.lang;
+      } else {
+        utter.lang = "tr-TR";
+      }
+
+      const rateSelect = document.getElementById("speechRateSelect");
+      utter.rate = customRate || (rateSelect ? parseFloat(rateSelect.value) : 0.92);
+      utter.pitch = 1.0;
+
+      if (btnEl) {
+        btnEl.classList.add("speaking");
+        utter.onend = () => btnEl.classList.remove("speaking");
+        utter.onerror = () => btnEl.classList.remove("speaking");
+      }
+
+      window.speechSynthesis.speak(utter);
+    }
+
+    if ("speechSynthesis" in window) {
+      window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
+    }
+
+    // Canlı Telaffuz Atölyesi olayları
+    const pronounceInputEl = document.getElementById("pronounceInput");
+    const phoneticOutputEl = document.getElementById("phoneticOutput");
+    if (pronounceInputEl && phoneticOutputEl) {
+      pronounceInputEl.addEventListener("input", () => {
+        phoneticOutputEl.textContent = toClassicalPhonetic(pronounceInputEl.value);
+      });
+      document.getElementById("labSpeakBtn").addEventListener("click", (e) => {
+        speakLatin(pronounceInputEl.value, e.currentTarget);
+      });
+      document.getElementById("labStopBtn").addEventListener("click", () => {
+        if ("speechSynthesis" in window) window.speechSynthesis.cancel();
+        document.querySelectorAll(".speak-btn.speaking").forEach((b) => b.classList.remove("speaking"));
+      });
+    }
+
+    function renderAlphabet() {
+      const grid = document.getElementById("alphaGrid");
+      grid.innerHTML = LATIN_ALPHABET.map((item) => `
+        <div class="alpha-card">
+          <div class="alpha-letter">${item.l}</div>
+          <div class="alpha-sound">[${item.s}]</div>
+          <div class="alpha-ex">${escapeHtml(item.ex)}</div>
+        </div>
+      `).join("");
+
+      grid.querySelectorAll(".alpha-card").forEach((card, idx) => {
+        card.addEventListener("click", () => {
+          grid.querySelectorAll(".alpha-card").forEach((c) => c.classList.remove("selected"));
+          card.classList.add("selected");
+          const item = LATIN_ALPHABET[idx];
+          document.getElementById("alphaGlyph").textContent = item.l;
+          document.getElementById("alphaTitle").textContent = `${item.l}, ${item.l.toLowerCase()} → [${item.s}] sesi`;
+          document.getElementById("alphaDesc").textContent = item.d;
+          document.getElementById("alphaEx").textContent = "Örnek: " + item.ex;
+          const cleanWord = item.ex.split("(")[0].trim();
+          speakLatin(cleanWord, card);
+        });
+      });
+
+      const diphthongs = [
+        { pair: "AE → ay", ex: "Caesar (Kaisar), aeternitas (ayternitas: sonsuzluk), ideae (ideay)" },
+        { pair: "AU → av", ex: "aurum (avrum: altın), causa (kavsa: neden), audacia (avdakia: cüret)" },
+        { pair: "OE → oy", ex: "poena (poyna: ceza), oeconomia (oykonomia: ekonomi)" },
+        { pair: "EU → ev", ex: "Europa (Evropa: Avrupa), neuter (nevter: ikisinden hiçbiri)" },
+        { pair: "PH → f", ex: "philosophia (filozofia), phaenomenon (faynomenon: doğa olayı)" },
+        { pair: "Çift Sessizler (ll, rr, tt, mm)", ex: "Yan yana iki sessiz geldiğinde her ikisi de baskılı ve ayrı ayrı duyurulur (puella, terra)." }
+      ];
+
+      document.getElementById("diphthongGrid").innerHTML = diphthongs.map((dp) => `
+        <div class="result-panel">
+          <strong style="color:var(--gold-light);display:block;margin-bottom:0.25rem;">${escapeHtml(dp.pair)}</strong>
+          <span style="font-size:0.84rem;color:var(--text-muted);">${escapeHtml(dp.ex)}</span>
+        </div>
+      `).join("");
+    }
+
+    const DECLENSIONS = {
+      dec1: {
+        note: "I. Çekim İsimler: Tekil genetivusları -ae ile biter ve (poeta, agricola, nauta gibi istisnalar hariç) dişildir (f.).",
+        rows: [
+          ["Nominativus (Yalın / Özne)", "philosophia", "felsefe", "philosophiae", "felsefeler"],
+          ["Vocativus (Hitap)", "philosophia", "ey felsefe", "philosophiae", "ey felsefeler"],
+          ["Accusativus (-i / Nesne)", "philosophiam", "felsefeyi", "philosophias", "felsefeleri"],
+          ["Genetivus (-in / İyelik)", "philosophiae", "felsefenin", "philosophiarum", "felsefelerin"],
+          ["Dativus (-e / Yönelme)", "philosophiae", "felsefeye / için", "philosophiis", "felsefelere / için"],
+          ["Ablativus (-den / Vasıta)", "philosophiā", "felsefeden / ile", "philosophiis", "felsefelerden / ile"]
+        ]
+      },
+      dec2m: {
+        note: "II. Çekim Eril İsimler: Tekil nominativusları -us, tekil genetivusları -i ile biter.",
+        rows: [
+          ["Nominativus", "philosophus", "filozof", "philosophi", "filozoflar"],
+          ["Vocativus", "philosophe", "ey filozof", "philosophi", "ey filozoflar"],
+          ["Accusativus", "philosophum", "filozofu", "philosophos", "filozofları"],
+          ["Genetivus", "philosophi", "filozofun", "philosophorum", "filozofların"],
+          ["Dativus", "philosopho", "filozofa / için", "philosophis", "filozoflara / için"],
+          ["Ablativus", "philosopho", "filozoftan / ile", "philosophis", "filozoflardan / ile"]
+        ]
+      },
+      dec2n: {
+        note: "II. Çekim Cinssiz (Neutrum) İsimler: Tüm cinssiz isimlerde Nom., Voc. ve Acc. halleri aynıdır; çoğulda -a ile biter.",
+        rows: [
+          ["Nominativus", "principium", "ilke", "principia", "ilkeler"],
+          ["Vocativus", "principium", "ey ilke", "principia", "ey ilkeler"],
+          ["Accusativus", "principium", "ilkeyi", "principia", "ilkeleri"],
+          ["Genetivus", "principii", "ilkenin", "principiorum", "ilkelerin"],
+          ["Dativus", "principio", "ilkeye / için", "principiis", "ilkelere / için"],
+          ["Ablativus", "principio", "ilkeden / ile", "principiis", "ilkelerden / ile"]
+        ]
+      },
+      dec2er: {
+        note: "II. Çekim -er ile Biten İsimler: Bazılarında çekim sırasında gövdedeki 'e' düşer (magister → magistr-i).",
+        rows: [
+          ["Nominativus", "magister", "öğretmen", "magistri", "öğretmenler"],
+          ["Vocativus", "magister", "ey öğretmen", "magistri", "ey öğretmenler"],
+          ["Accusativus", "magistrum", "öğretmeni", "magistros", "öğretmenleri"],
+          ["Genetivus", "magistri", "öğretmenin", "magistrorum", "öğretmenlerin"],
+          ["Dativus", "magistro", "öğretmene", "magistris", "öğretmenlere"],
+          ["Ablativus", "magistro", "öğretmenden / ile", "magistris", "öğretmenlerden / ile"]
+        ]
+      },
+      dec3mf: {
+        note: "III. Çekim Eril/Dişil İsimler: Tekil genetivusları -is ile biter; gövde genetivustan -is atılarak bulunur (virtut-is).",
+        rows: [
+          ["Nominativus", "virtus", "erdem", "virtutes", "erdemler"],
+          ["Vocativus", "virtus", "ey erdem", "virtutes", "ey erdemler"],
+          ["Accusativus", "virtutem", "erdemi", "virtutes", "erdemleri"],
+          ["Genetivus", "virtutis", "erdemin", "virtutum", "erdemlerin"],
+          ["Dativus", "virtuti", "erdeme / için", "virtutibus", "erdemlere / için"],
+          ["Ablativus", "virtute", "erdemden / ile", "virtutibus", "erdemlerden / ile"]
+        ]
+      },
+      dec3n: {
+        note: "III. Çekim Cinssiz İsimler: Gövde genetivustan bulunur (corpor-is); çoğul Nom./Voc./Acc. halleri -a (veya -ia) alır.",
+        rows: [
+          ["Nominativus", "corpus", "beden, cisim", "corpora", "bedenler"],
+          ["Vocativus", "corpus", "ey beden", "corpora", "ey bedenler"],
+          ["Accusativus", "corpus", "bedeni", "corpora", "bedenleri"],
+          ["Genetivus", "corporis", "bedenin", "corporum", "bedenlerin"],
+          ["Dativus", "corpori", "bedene", "corporibus", "bedenlere"],
+          ["Ablativus", "corpore", "bedenden / ile", "corporibus", "bedenlerden / ile"]
+        ]
+      },
+      dec4: {
+        note: "IV. Çekim İsimler: Eriller -us, cinssizler -u ile biter; tekil genetivusları uzun -ūs ile biter.",
+        rows: [
+          ["Nominativus", "spiritus", "ruh, soluk", "spiritūs", "ruhlar"],
+          ["Vocativus", "spiritus", "ey ruh", "spiritūs", "ey ruhlar"],
+          ["Accusativus", "spiritum", "ruhu", "spiritūs", "ruhları"],
+          ["Genetivus", "spiritūs", "ruhun", "spirituum", "ruhların"],
+          ["Dativus", "spiritui", "ruha", "spiritibus", "ruhlara"],
+          ["Ablativus", "spiritu", "ruhtan / ile", "spiritibus", "ruhlardan / ile"]
+        ]
+      },
+      dec5: {
+        note: "V. Çekim İsimler: Tekil nominativusları -es, genetivusları -ei ile biter; dies (gün) hariç genellikle dişildir.",
+        rows: [
+          ["Nominativus", "res", "şey, olgu, gerçeklik", "res", "şeyler, olgular"],
+          ["Vocativus", "res", "ey şey", "res", "ey şeyler"],
+          ["Accusativus", "rem", "şeyi, olguyu", "res", "şeyleri, olguları"],
+          ["Genetivus", "rei", "şeyin, olgunun", "rerum", "şeylerin, olguların"],
+          ["Dativus", "rei", "şeye, olguya", "rebus", "şeylere, olgulara"],
+          ["Ablativus", "re", "şeyden / ile", "rebus", "şeylerden / ile"]
+        ]
+      }
+    };
+
+    function renderDeclension(key = "dec1") {
+      const data = DECLENSIONS[key];
+      document.getElementById("declensionNote").textContent = data.note;
+      document.getElementById("declensionTableWrap").innerHTML = `
+        <table>
+          <thead>
+            <tr>
+              <th>Hal (Casus)</th>
+              <th>Tekil (Singularis)</th>
+              <th>Tekil Anlamı</th>
+              <th>Çoğul (Pluralis)</th>
+              <th>Çoğul Anlamı</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${data.rows.map((r) => `
+              <tr>
+                <td><strong>${escapeHtml(r[0])}</strong></td>
+                <td><strong class="latin-form">${escapeHtml(r[1])}</strong> <button type="button" class="speak-btn" onclick="speakLatin('${escapeHtml(r[1])}', this)" title="Dinle">🔊</button></td>
+                <td style="color:var(--text-muted)">${escapeHtml(r[2])}</td>
+                <td><strong class="latin-form">${escapeHtml(r[3])}</strong> <button type="button" class="speak-btn" onclick="speakLatin('${escapeHtml(r[3])}', this)" title="Dinle">🔊</button></td>
+                <td style="color:var(--text-muted)">${escapeHtml(r[4])}</td>
+              </tr>
+            `).join("")}
+          </tbody>
+        </table>
+      `;
+    }
+
+    function renderCasesOverview() {
+      const cases = [
+        ["1. Nominativus (Yalın Hal)", "Kim? Ne?", "Cümlenin öznesidir (Philosophus scribit: Filozof yazıyor)."],
+        ["2. Vocativus (Hitap Hali)", "Ey ...!", "Seslenme halidir; II. çekim -us isimlerde -e olur (Mi fili: Ey oğlum; Domine: Efendim)."],
+        ["3. Accusativus (-i Hali)", "Kimi? Neyi?", "Geçişli fiillerin doğrudan nesnesidir (Librum legit: Kitabı okuyor)."],
+        ["4. Genetivus (-in Hali)", "Kimin? Neyin?", "İyelik ve tamlayan bildirir; sözlükte çekim grubunu belirler (Amor sapientiae: Bilgelik sevgisi)."],
+        ["5. Dativus (-e Hali)", "Kime? Neye?", "Yönelme ve fayda bildirir (Populo cara: Halk için değerli)."],
+        ["6. Ablativus (-den / Vasıta)", "Neyle? Kimden?", "Ayrılma, araç (instrumentalis) ve edatlarla yer/sebep bildirir (In Italia: İtalya'da)."],
+        ["7. Locativus (Bulunma Hali)", "Nerede?", "Şehir ve küçük ada adlarında kullanılır (Romae: Roma'da; domi: evde)."]
+      ];
+      document.getElementById("casesOverviewWrap").innerHTML = `
+        <table>
+          <thead><tr><th>Hal Adı</th><th>Sorusu</th><th>Açıklama ve Örnek</th></tr></thead>
+          <tbody>
+            ${cases.map((c) => `<tr><td><strong style="color:var(--gold-light)">${c[0]}</strong></td><td style="color:var(--turquoise)">${c[1]}</td><td>${c[2]}</td></tr>`).join("")}
+          </tbody>
+        </table>
+      `;
+    }
+
+    document.getElementById("declensionSelect").addEventListener("change", (e) => renderDeclension(e.target.value));
+
+    const VERB_DATA = {
+      esse: {
+        info: "sum, esse, fui (olmak, var olmak): Edilgen çatısı yoktur. Tüm edilgen geçmiş zamanların kuruluşunda yardımcı fiil olarak kullanılır.",
+        act: [
+          ["1. Tekil (ego)", "sum (varım)", "eram (idim)", "ero (olacağım)", "fui (oldum)"],
+          ["2. Tekil (tu)", "es (varsın)", "eras (idin)", "eris (olacaksın)", "fuisti (oldun)"],
+          ["3. Tekil (is/ea/id)", "est (vardır)", "erat (idi)", "erit (olacak)", "fuit (oldu)"],
+          ["1. Çoğul (nos)", "sumus (varız)", "eramus (idik)", "erimus (olacağız)", "fuimus (olduk)"],
+          ["2. Çoğul (vos)", "estis (varsınız)", "eratis (idiniz)", "eritis (olacaksınız)", "fuistis (oldunuz)"],
+          ["3. Çoğul (ei/eae/ea)", "sunt (vardırlar)", "erant (idiler)", "erunt (olacaklar)", "fuerunt (oldular)"]
+        ],
+        pass: [
+          ["Bilgi", "Esse (olmak / var olmak) geçişsiz bir varlık fiili olduğu için edilgen (passiva) çekimi bulunmaz.", "—", "—", "—"]
+        ]
+      },
+      c1: {
+        info: "I. Çekim (-are): cogito, cogitare, cogitavi, cogitatum (düşünmek). Şimdiki zaman gövdesi: cogita-",
+        act: [
+          ["1. Tekil", "cogito (düşünüyorum)", "cogitabam (düşünüyordum)", "cogitabo (düşüneceğim)", "cogitavi (düşündüm)"],
+          ["2. Tekil", "cogitas", "cogitabas", "cogitabis", "cogitavisti"],
+          ["3. Tekil", "cogitat", "cogitabat", "cogitabit", "cogitavit"],
+          ["1. Çoğul", "cogitamus", "cogitabamus", "cogitabimus", "cogitavimus"],
+          ["2. Çoğul", "cogitatis", "cogitabatis", "cogitabitis", "cogitavistis"],
+          ["3. Çoğul", "cogitant", "cogitabant", "cogitabunt", "cogitaverunt"]
+        ],
+        pass: [
+          ["1. Tekil", "cogitor (düşünülüyorum)", "cogitabar", "cogitabor", "cogitatus, -a, -um sum"],
+          ["2. Tekil", "cogitaris", "cogitabaris", "cogitaberis", "cogitatus, -a, -um es"],
+          ["3. Tekil", "cogitatur", "cogitabatur", "cogitabitur", "cogitatus, -a, -um est"],
+          ["1. Çoğul", "cogitamur", "cogitabamur", "cogitabimur", "cogitati, -ae, -a sumus"],
+          ["2. Çoğul", "cogitamini", "cogitabamini", "cogitabimini", "cogitati, -ae, -a estis"],
+          ["3. Çoğul", "cogitantur", "cogitabantur", "cogitabuntur", "cogitati, -ae, -a sunt"]
+        ]
+      },
+      c2: {
+        info: "II. Çekim (-ēre): moneo, monere, monui, monitum (uyarmak). Şimdiki zaman 1. tekil şahıs -eo ile biter.",
+        act: [
+          ["1. Tekil", "moneo (uyarıyorum)", "monebam (uyarıyordum)", "monebo (uyaracağım)", "monui (uyardım)"],
+          ["2. Tekil", "mones", "monebas", "monebis", "monuisti"],
+          ["3. Tekil", "monet", "monebat", "monebit", "monuit"],
+          ["1. Çoğul", "monemus", "monebamus", "monebimus", "monuimus"],
+          ["2. Çoğul", "monetis", "monebatis", "monebitis", "monuistis"],
+          ["3. Çoğul", "monent", "monebant", "monebunt", "monuerunt"]
+        ],
+        pass: [
+          ["1. Tekil", "moneor (uyarılıyorum)", "monebar", "monebor", "monitus, -a, -um sum"],
+          ["2. Tekil", "moneris", "monebaris", "moneberis", "monitus, -a, -um es"],
+          ["3. Tekil", "monetur", "monebatur", "monebitur", "monitus, -a, -um est"],
+          ["1. Çoğul", "monemur", "monebamur", "monebimur", "moniti, -ae, -a sumus"],
+          ["2. Çoğul", "monemini", "monebamini", "monebimini", "moniti, -ae, -a estis"],
+          ["3. Çoğul", "monentur", "monebantur", "monebuntur", "moniti, -ae, -a sunt"]
+        ]
+      },
+      c3: {
+        info: "III. Çekim (-ere): lego, legere, legi, lectum (okumak). Gelecek zamanda -bo değil -am, -es, -et ekleri gelir.",
+        act: [
+          ["1. Tekil", "lego (okuyorum)", "legebam (okuyordum)", "legam (okuyacağım)", "legi (okudum)"],
+          ["2. Tekil", "legis", "legebas", "leges", "legisti"],
+          ["3. Tekil", "legit", "legebat", "leget", "legit"],
+          ["1. Çoğul", "legimus", "legebamus", "legemus", "legimus"],
+          ["2. Çoğul", "legitis", "legebatis", "legetis", "legistis"],
+          ["3. Çoğul", "legunt", "legebant", "legent", "legerunt"]
+        ],
+        pass: [
+          ["1. Tekil", "legor (okunuyorum)", "legebar", "legar", "lectus, -a, -um sum"],
+          ["2. Tekil", "legeris", "legebaris", "legeris", "lectus, -a, -um es"],
+          ["3. Tekil", "legitur", "legebatur", "legetur", "lectus, -a, -um est"],
+          ["1. Çoğul", "legimur", "legebamur", "legemur", "lecti, -ae, -a sumus"],
+          ["2. Çoğul", "legimini", "legebamini", "legemini", "lecti, -ae, -a estis"],
+          ["3. Çoğul", "leguntur", "legebantur", "legentur", "lecti, -ae, -a sunt"]
+        ]
+      },
+      c4: {
+        info: "IV. Çekim (-ire): audio, audire, audivi, auditum (işitmek). Şimdiki zaman 1. tekil şahıs -io ile biter.",
+        act: [
+          ["1. Tekil", "audio (işitiyorum)", "audiebam (işitiyordum)", "audiam (işiteceğim)", "audivi (işittim)"],
+          ["2. Tekil", "audis", "audiebas", "audies", "audivisti"],
+          ["3. Tekil", "audit", "audiebat", "audiet", "audivit"],
+          ["1. Çoğul", "audimus", "audiebamus", "audiemus", "audivimus"],
+          ["2. Çoğul", "auditis", "audiebatis", "audietis", "audivistis"],
+          ["3. Çoğul", "audiunt", "audiebant", "audient", "audiverunt"]
+        ],
+        pass: [
+          ["1. Tekil", "audior (işitiliyorum)", "audiebar", "audiar", "auditus, -a, -um sum"],
+          ["2. Tekil", "audiris", "audiebaris", "audieris", "auditus, -a, -um es"],
+          ["3. Tekil", "auditur", "audiebatur", "audietur", "auditus, -a, -um est"],
+          ["1. Çoğul", "audimur", "audiebamur", "audiemur", "auditi, -ae, -a sumus"],
+          ["2. Çoğul", "audimini", "audiebamini", "audiemini", "auditi, -ae, -a estis"],
+          ["3. Çoğul", "audiuntur", "audiebantur", "audientur", "auditi, -ae, -a sunt"]
+        ]
+      }
+    };
+
+    function renderVerbTable() {
+      const c = document.getElementById("verbConjSelect").value;
+      const v = document.getElementById("verbVoiceSelect").value;
+      const item = VERB_DATA[c];
+      document.getElementById("verbInfoNote").textContent = item.info;
+      const rows = item[v];
+      document.getElementById("verbTableWrap").innerHTML = `
+        <table>
+          <thead>
+            <tr>
+              <th>Şahıs</th>
+              <th>Praesens (Şimdiki)</th>
+              <th>Imperfectum (Hikâye)</th>
+              <th>Futurum (Gelecek)</th>
+              <th>Perfectum (Geçmiş)</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows.map((r) => `
+              <tr>
+                <td><strong>${escapeHtml(r[0])}</strong></td>
+                <td><strong class="latin-form">${escapeHtml(r[1])}</strong> ${r[1] !== "—" ? `<button type="button" class="speak-btn" onclick="speakLatin('${escapeHtml(r[1])}', this)" title="Dinle">🔊</button>` : ""}</td>
+                <td><span class="latin-serif">${escapeHtml(r[2])}</span> ${r[2] !== "—" ? `<button type="button" class="speak-btn" onclick="speakLatin('${escapeHtml(r[2])}', this)" title="Dinle">🔊</button>` : ""}</td>
+                <td><span class="latin-serif">${escapeHtml(r[3])}</span> ${r[3] !== "—" ? `<button type="button" class="speak-btn" onclick="speakLatin('${escapeHtml(r[3])}', this)" title="Dinle">🔊</button>` : ""}</td>
+                <td><strong class="latin-form" style="color:var(--turquoise)">${escapeHtml(r[4])}</strong> ${r[4] !== "—" ? `<button type="button" class="speak-btn" onclick="speakLatin('${escapeHtml(r[4])}', this)" title="Dinle">🔊</button>` : ""}</td>
+              </tr>
+            `).join("")}
+          </tbody>
+        </table>
+      `;
+    }
+
+    document.getElementById("verbConjSelect").addEventListener("change", renderVerbTable);
+    document.getElementById("verbVoiceSelect").addEventListener("change", renderVerbTable);
+
+    function toRoman(num) {
+      num = Math.max(1, Math.min(3999, Math.floor(Number(num) || 1)));
+      const map = [
+        [1000, "M"], [900, "CM"], [500, "D"], [400, "CD"],
+        [100, "C"], [90, "XC"], [50, "L"], [40, "XL"],
+        [10, "X"], [9, "IX"], [5, "V"], [4, "IV"], [1, "I"]
+      ];
+      let res = "";
+      let n = num;
+      for (const [val, sym] of map) {
+        while (n >= val) { res += sym; n -= val; }
+      }
+      return res;
+    }
+
+    function toLatinNumberWords(num) {
+      num = Math.max(1, Math.min(3999, Math.floor(Number(num) || 1)));
+      const ones = ["", "unus", "duo", "tres", "quattuor", "quinque", "sex", "septem", "octo", "novem"];
+      const teens = ["decem", "undecim", "duodecim", "tredecim", "quattuordecim", "quindecim", "sedecim", "septendecim", "duodeviginti", "undeviginti"];
+      const tens = ["", "decem", "viginti", "triginta", "quadraginta", "quinquaginta", "sexaginta", "septuaginta", "octoginta", "nonaginta"];
+      const hundreds = ["", "centum", "ducenti", "trecenti", "quadringenti", "quingenti", "sescenti", "septingenti", "octingenti", "nongenti"];
+
+      const parts = [];
+      const m = Math.floor(num / 1000);
+      const c = Math.floor((num % 1000) / 100);
+      const rem = num % 100;
+      const t = Math.floor(rem / 10);
+      const o = rem % 10;
+
+      if (m === 1) parts.push("mille");
+      else if (m > 1) parts.push(ones[m] + " milia");
+
+      if (c > 0) parts.push(hundreds[c]);
+
+      if (rem >= 10 && rem <= 19) {
+        parts.push(teens[rem - 10]);
+      } else {
+        if (t > 0 && o === 8 && t < 9) {
+          parts.push("duode" + tens[t + 1]);
+        } else if (t > 0 && o === 9 && t < 9) {
+          parts.push("unde" + tens[t + 1]);
+        } else {
+          if (t > 0) parts.push(tens[t]);
+          if (o > 0) parts.push(ones[o]);
+        }
+      }
+      return parts.join(" ");
+    }
+
+    function updateRomanBox(val) {
+      const n = Math.max(1, Math.min(3999, Math.floor(Number(val) || 1)));
+      const roman = toRoman(n);
+      const words = toLatinNumberWords(n);
+      document.getElementById("romanResultBox").innerHTML = `
+        <div class="result-panel">
+          <span style="font-size:0.76rem;color:var(--turquoise);font-weight:700;">Roma Rakamı Sembolü</span>
+          <div style="font-family:var(--font-display);font-size:2rem;color:var(--gold-light);margin-top:0.2rem;">${roman}</div>
+        </div>
+        <div class="result-panel">
+          <span style="font-size:0.76rem;color:var(--gold-light);font-weight:700;">Latince Okunuşu (Numerus Cardinalis)</span>
+          <div class="latin-serif" style="font-size:1.45rem;color:var(--text-main);font-weight:700;margin-top:0.2rem;">${escapeHtml(words)} <button type="button" class="speak-btn" onclick="speakLatin('${escapeHtml(words)}', this)" title="Sayıyı Dinle">🔊 Dinle</button></div>
+        </div>
+      `;
+    }
+
+    document.getElementById("romanNumInput").addEventListener("input", (e) => updateRomanBox(e.target.value));
+    document.querySelectorAll("[data-rnum]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        document.getElementById("romanNumInput").value = btn.dataset.rnum;
+        updateRomanBox(btn.dataset.rnum);
+      });
+    });
+
+    function renderCalendarInfo() {
+      document.getElementById("calendarInfoBox").innerHTML = `
+        <div class="result-panel">
+          <strong style="color:var(--gold-light);display:block;margin-bottom:0.4rem;">Ayın Üç Sabit Günü</strong>
+          <ul style="padding-left:1.1rem;font-size:0.85rem;color:var(--text-muted);display:flex;flex-direction:column;gap:0.35rem;">
+            <li><strong style="color:var(--turquoise)">Kalendae:</strong> Her ayın 1. günü (Yeniay).</li>
+            <li><strong style="color:var(--turquoise)">Nonae:</strong> Mart, Mayıs, Temmuz, Ekim aylarının 7. günü; diğer ayların 5. günü.</li>
+            <li><strong style="color:var(--turquoise)">Idus:</strong> Mart, Mayıs, Temmuz, Ekim aylarının 15. günü (Idibus Martiis: 15 Mart); diğer ayların 13. günü.</li>
+          </ul>
+        </div>
+        <div class="result-panel">
+          <strong style="color:var(--gold-light);display:block;margin-bottom:0.4rem;">Haftanın Günleri (Dies)</strong>
+          <div style="font-size:0.84rem;color:var(--text-muted);line-height:1.7;">
+            <strong>Dies Solis</strong> (Pazar) · <strong>Dies Lunae</strong> (Pazartesi) · <strong>Dies Martis</strong> (Salı) · <strong>Dies Mercurii</strong> (Çarşamba) · <strong>Dies Iovis</strong> (Perşembe) · <strong>Dies Veneris</strong> (Cuma) · <strong>Dies Saturni</strong> (Cumartesi)
+          </div>
+        </div>
+      `;
+    }
+
+    const READINGS = [
+      {
+        cat: "felsefe",
+        title: "1. René Descartes — Cogito, Ergo Sum (Metafizik Düşünceler)",
+        source: "Meditationes de Prima Philosophia (1641)",
+        latin: "Dubito, ergo cogito; cogito, ergo sum. Ego sum res cogitans, id est dubitans, affirmans, negans, pauca intellegens, multa ignorans, volens, nolens, imaginans quoque et sentiens.",
+        tr: "Şüphe ediyorum, öyleyse düşünüyorum; düşünüyorum, öyleyse varım. Ben düşünen bir şeyim (tözüm); yani şüphe eden, onaylayan, yadsıyan, az şeyi anlayan, çok şeyi bilmeyen, isteyen, istemeyen, aynı zamanda hayal eden ve duyumsayan bir varlığım.",
+        note: "cogito: I. çekim şimdiki zaman 1. tekil şahıs; sum: esse fiili 1. tekil şahıs; res cogitans: düşünen şey/töz (V. çekim dişil isim + etken şimdiki zaman participium)."
+      },
+      {
+        cat: "felsefe",
+        title: "2. Baruch Spinoza — Sub Specie Aeternitatis & Causa Sui",
+        source: "Ethica, Ordine Geometrico Demonstrata (1677)",
+        latin: "Per causam sui intellego id, cuius essentia involvit existentiam, sive id, cuius natura non potest concipi nisi existens. De ratione naturae est rerum contemplari non ut contingentes, sed ut necessarias, sub quadam aeternitatis specie.",
+        tr: "Kendinin nedeni (causa sui) ile özü varoluşunu içeren şeyi, yani doğası var olmaksızın kavranamayan şeyi anlıyorum. Şeyleri olumsal olarak değil, zorunlu olarak, belirli bir sonsuzluk görünümü altında (sub specie aeternitatis) temaşa etmek aklın doğasındandır.",
+        note: "causa sui: kendinin nedeni (Genetivus); essentia / existentia: I. çekim felsefi kavramlar; sub specie aeternitatis: sonsuzluğun bakışı altında."
+      },
+      {
+        cat: "felsefe",
+        title: "3. Lucretius — Ex Nihilo Nihil Fit (Hiçlikten Hiçbir Şey Doğmaz)",
+        source: "De Rerum Natura (Doğa Üzerine), I. Kitap",
+        latin: "Principium cuius hinc nobis exordia sumet, nullam rem e nihilo gigni divinitus umquam. Quippe ita formido mortalis continet omnis, quod multa in terris fieri caeloque tuentur.",
+        tr: "Bizim için başlangıç noktası şu ilke olacaktır: Hiçbir şey asla tanrısal bir müdahaleyle hiçlikten (yoktan) var edilmez. Nitekim yeryüzünde ve gökyüzünde gerçekleşen birçok olayı gördükleri için tüm ölümlüleri korku sarmıştır.",
+        note: "e nihilo: hiçlikten (e/ex + ablativus); nullam rem: hiçbir şeyi (accusativus nesne); mortalis omnis: tüm ölümlüleri (III. çekim sıfat)."
+      },
+      {
+        cat: "felsefe",
+        title: "4. Marcus Tullius Cicero — Dostluk ve Erdem Üzerine",
+        source: "Laelius de Amicitia (Dostluk Üzerine)",
+        latin: "Amicitia nisi in bonis esse non potest. Est enim amicitia nihil aliud nisi omnium divinarum humanarumque rerum cum benevolentia et caritate consensio. Virtus et conciliat amicitias et conservat.",
+        tr: "Dostluk iyi insanlar arasında olmadıkça var olamaz. Zira dostluk, iyi niyet ve sevgiyle birlikte tanrısal ve insani bütün konularda tam bir görüş birliğinden başka bir şey değildir. Dostlukları kuran da koruyan da erdemdir.",
+        note: "in bonis: iyi insanlar arasında (in + ablativus); divinarum humanarumque rerum: tanrısal ve insani şeylerin (-que bağlacı ikinci kelimenin sonuna eklenir)."
+      },
+      {
+        cat: "felsefe",
+        title: "5. Lucius Annaeus Seneca — Zamanın Değeri ve Yaşam Sanatı",
+        source: "Epistulae Morales ad Lucilium (Ahlak Mektupları)",
+        latin: "Ita fac, mi Lucili: vindica te tibi, et tempus quod adhuc aut auferebatur aut subripiebatur aut excidebat collige et serva. Omnia, Lucili, aliena sunt, tempus tantum nostrum est.",
+        tr: "Öyle yap sevgili Lucilius'um: Kendini kendine ayır; bugüne dek senden zorla alınan, çalınan ya da elinden kayıp giden zamanı topla ve koru. Her şey başkalarına aittir Lucilius, yalnızca zaman bizimdir.",
+        note: "mi Lucili: ey Lucilius'um (meus zamirinin şiirsel vocativusu 'mi' ve -ius ile biten özel adın vocativusu '-i'); tempus nostrum est: zaman bizimdir."
+      },
+      {
+        cat: "giris",
+        title: "6. Descartes Coğrafya Öğreniyor (Geographia)",
+        source: "I. Ünite — I. ve II. Çekim İsimler & Esse Fiili",
+        latin: "Roma in Italia est. Italia et Graecia sunt in Europa. Aegyptus in Europa non est; Aegyptus in Africa est. In imperio Romano multae sunt provinciae. Britannia magna insula est; Melita insula parva est.",
+        tr: "Roma İtalya'dadır. İtalya ve Yunanistan Avrupa'dadır. Mısır Avrupa'da değildir; Mısır Afrika'dadır. Roma İmparatorluğu'nda birçok eyalet vardır. Britanya büyük bir adadır; Malta küçük bir adadır.",
+        note: "in + ablativus (in Italia, in Europa) bulunma bildirir; magna insula / insula parva ifadelerinde sıfat isimle cins (f.), sayı (tekil) ve hal (nom.) uyumu içindedir."
+      },
+      {
+        cat: "giris",
+        title: "7. Filozof Lucretius'un Ailesi (Familia Lucretii Philosophi)",
+        source: "I. Ünite — Genetivus ve Günlük Yaşam",
+        latin: "Lucretius est philosophus. Quintus est filius Lucretii. Gaius est servus philosophi et in horto laborat. Lucilius est coquus et in culina laborat. Lucretius in tablino scribit; amici Lucretii in triclinio cibum edent.",
+        tr: "Lucretius bir filozoftur. Quintus, Lucretius'un oğludur. Gaius filozofun kölesidir ve bahçede çalışıyor. Lucilius aşçıdır ve mutfakta çalışıyor. Lucretius çalışma odasında yazı yazıyor; Lucretius'un dostları yemek odasında yemek yiyorlar.",
+        note: "Lucretii / philosophi: -in hali (tekil genetivus); in horto / in culina / in tablino: Roma evinin bölümleri (ablativus)."
+      },
+      {
+        cat: "giris",
+        title: "8. Renatus'un Latince Kitabı (Liber Latinus Renati)",
+        source: "II. Ünite — Sıra Sayıları ve Felsefe Terimleri",
+        latin: "Ecce duo libri Latini: liber antiquus et liber novus. Titulus libri Renati est LINGUA LATINA. In pagina prima capituli secundi multa vocabula nova sunt: natura, metaphysica, ontologia, causa, scientia.",
+        tr: "İşte iki Latince kitap: eski bir kitap ve yeni bir kitap. Renatus'un (Descartes'ın) kitabının adı LATİN DİLİ'dir. İkinci bölümün ilk sayfasında birçok yeni kelime vardır: doğa, metafizik, varlıkbilim, neden, bilim.",
+        note: "capituli secundi: ikinci bölümün (II. çekim cinssiz genetivus); pagina prima: ilk sayfa (I. çekim dişil nom.)."
+      },
+      {
+        cat: "ozdeyis",
+        title: "9. Altından Sözler — I (Aureae Sententiae)",
+        source: "V. Ünite — Klasik Özdeyişler",
+        latin: "Philosophia est mater omnium scientiarum. Philosophia est animi medicina. Vita brevis est, ars longa. Experientia docet. Non scholae, sed vitae discimus. Dum anima est, spes est.",
+        tr: "Felsefe bütün bilimlerin anasıdır. Felsefe ruhun ilacıdır. Hayat kısa, sanat uzundur. Tecrübe öğretir. Okul için değil, hayat için öğreniyoruz. Can (nefes) oldukça ümit vardır.",
+        note: "mater omnium scientiarum: bütün bilimlerin anası; non scholae, sed vitae: okul için değil, hayat için (Dativus)."
+      },
+      {
+        cat: "ozdeyis",
+        title: "10. Altından Sözler — II (Felsefe ve İnsan Doğası)",
+        source: "IV. ve VI. Üniteler — Özlü Sözler",
+        latin: "Homo homini lupus est. Quot homines, tot sententiae. Natura est optimus magister. Verus amicus est maximus thesaurus. Conscientia est gravissimum pondus. Veritas in vino.",
+        tr: "İnsan insanın kurdudur. Ne kadar insan varsa o kadar düşünce vardır. Doğa en iyi öğretmendir. Hakiki dost en büyük hazinedir. Vicdan en ağır yüktür. Hakikat şaraptadır.",
+        note: "optimus (bonus'un en üstünlük derecesi), maximus (magnus'un en üstünlük derecesi), gravissimum (gravis'in en üstünlük derecesi)."
+      }
+    ];
+
+    let showTrText = true;
+    let showGramNote = true;
+    let latinScale = 1.0;
+    let activeReadingCat = "all";
+
+    function renderReadings() {
+      const list = activeReadingCat === "all" ? READINGS : READINGS.filter((r) => r.cat === activeReadingCat);
+      document.getElementById("readingsContainer").innerHTML = list.map((r) => `
+        <article class="reading-card">
+          <div class="reading-meta">
+            <strong style="color:var(--gold-light);font-size:0.96rem;">${escapeHtml(r.title)}</strong>
+            <div style="display:flex;align-items:center;gap:0.4rem;flex-wrap:wrap;">
+              <button type="button" class="speak-btn" onclick="speakLatin(this.dataset.lat, this, 0.92)" data-lat="${escapeHtml(r.latin)}">🔊 Sesli Dinle</button>
+              <button type="button" class="speak-btn" onclick="speakLatin(this.dataset.lat, this, 0.70)" data-lat="${escapeHtml(r.latin)}">🐢 Yavaş</button>
+              <button type="button" class="speak-btn" onclick="if('speechSynthesis' in window) window.speechSynthesis.cancel();">⏹</button>
+              <span class="badge">${escapeHtml(r.source)}</span>
+            </div>
+          </div>
+          <div class="latin-passage">${escapeHtml(r.latin)}</div>
+          <div class="tr-passage ${showTrText ? "" : "hidden-layer"}">
+            <strong style="color:var(--turquoise);font-size:0.78rem;display:block;margin-bottom:0.15rem;">Türkçe Çeviri:</strong>
+            ${escapeHtml(r.tr)}
+          </div>
+          <div class="gram-note ${showGramNote ? "" : "hidden-layer"}">
+            <strong style="color:var(--gold-light);">Gramer Çözümlemesi:</strong> ${escapeHtml(r.note)}
+          </div>
+        </article>
+      `).join("");
+    }
+
+    document.getElementById("readingCatFilters").addEventListener("click", (e) => {
+      const pill = e.target.closest(".pill");
+      if (!pill) return;
+      document.querySelectorAll("#readingCatFilters .pill").forEach((p) => p.classList.remove("active"));
+      pill.classList.add("active");
+      activeReadingCat = pill.dataset.rcat;
+      renderReadings();
+    });
+
+    document.getElementById("latFontIncBtn").addEventListener("click", () => {
+      latinScale = Math.min(1.45, +(latinScale + 0.1).toFixed(2));
+      document.documentElement.style.setProperty("--latin-scale", latinScale);
+      document.getElementById("latFontScaleLabel").textContent = "%" + Math.round(latinScale * 100);
+    });
+
+    document.getElementById("latFontDecBtn").addEventListener("click", () => {
+      latinScale = Math.max(0.8, +(latinScale - 0.1).toFixed(2));
+      document.documentElement.style.setProperty("--latin-scale", latinScale);
+      document.getElementById("latFontScaleLabel").textContent = "%" + Math.round(latinScale * 100);
+    });
+
+    document.getElementById("toggleTrTextBtn").addEventListener("click", (e) => {
+      showTrText = !showTrText;
+      e.target.textContent = showTrText ? "👁 Türkçe Çeviri: Açık" : "🙈 Türkçe Çeviri: Gizli";
+      renderReadings();
+    });
+
+    document.getElementById("toggleGramNoteBtn").addEventListener("click", (e) => {
+      showGramNote = !showGramNote;
+      e.target.textContent = showGramNote ? "👁 Gramer Çözümlemesi: Açık" : "🙈 Gramer Çözümlemesi: Gizli";
+      renderReadings();
+    });
+
+    const LATIN_DICT = [
+      { w: "aeternitas, -atis, f.", pos: "III. Çekim İsim", m: "sonsuzluk, ebediyet" },
+      { w: "anima, -ae, f.", pos: "I. Çekim İsim", m: "can, yaşam soluğu, ruh" },
+      { w: "animus, -i, m.", pos: "II. Çekim İsim", m: "zihin, ruhun akli yanı, gönül, irade" },
+      { w: "apathia, -ae, f.", pos: "I. Çekim İsim", m: "duygulardan bağımsız olma hali, sarsılmazlık" },
+      { w: "argumentum, -i, n.", pos: "II. Çekim İsim", m: "sav, iddia, tez, kanıt, ispat" },
+      { w: "ars, artis, f.", pos: "III. Çekim İsim", m: "sanat, beceri, bilim kuramı" },
+      { w: "attributum, -i, n.", pos: "II. Çekim İsim", m: "yüklem, öznitelik, sıfat (Spinoza)" },
+      { w: "beatus, -a, -um", pos: "I-II. Çekim Sıfat", m: "mutlu, kutlu, bahtlı" },
+      { w: "bellum, -i, n.", pos: "II. Çekim İsim", m: "savaş" },
+      { w: "bonitas, -atis, f.", pos: "III. Çekim İsim", m: "iyilik, iyi nitelik" },
+      { w: "bonus, -a, -um", pos: "I-II. Çekim Sıfat", m: "iyi (üst. der. melior, en üst. optimus)" },
+      { w: "caelum, -i, n.", pos: "II. Çekim İsim", m: "gök, gökyüzü" },
+      { w: "caput, capitis, n.", pos: "III. Çekim İsim", m: "baş, kafa, kaynak, başşehir" },
+      { w: "causa, -ae, f.", pos: "I. Çekim İsim", m: "neden, sebep (causa sui: kendinin nedeni)" },
+      { w: "civitas, -atis, f.", pos: "III. Çekim İsim", m: "vatandaşlık, devlet, şehir devleti" },
+      { w: "cogitatio, -onis, f.", pos: "III. Çekim İsim", m: "düşünme, tefekkür, düşünce" },
+      { w: "cogito, -are", pos: "I. Çekim Fiil", m: "düşünmek (Cogito, ergo sum: Düşünüyorum, öyleyse varım)" },
+      { w: "conscientia, -ae, f.", pos: "I. Çekim İsim", m: "bilinç, şuur, vicdan" },
+      { w: "corpus, corporis, n.", pos: "III. Çekim İsim", m: "cisim, beden, vücut, külliyat" },
+      { w: "deus, -i, m.", pos: "II. Çekim İsim", m: "tanrı, ilah" },
+      { w: "dies, -ei, m./f.", pos: "V. Çekim İsim", m: "gün" },
+      { w: "disciplina, -ae, f.", pos: "I. Çekim İsim", m: "öğretim, disiplin, bilgi dalı, felsefe okulu" },
+      { w: "doctrina, -ae, f.", pos: "I. Çekim İsim", m: "öğreti, kuram, bilimsel bilgi" },
+      { w: "domus, -us, f.", pos: "II-IV. Çekim İsim", m: "ev, yuva, yurt, felsefe ekolü" },
+      { w: "dubito, -are", pos: "I. Çekim Fiil", m: "şüphe etmek, kuşkulanmak" },
+      { w: "elementum, -i, n.", pos: "II. Çekim İsim", m: "element, öğe, ilk ilke" },
+      { w: "ens, entis, n.", pos: "III. Çekim İsim", m: "varlık, var olan (ens cogitans: düşünen varlık)" },
+      { w: "epistemologia, -ae, f.", pos: "I. Çekim İsim", m: "bilgi felsefesi" },
+      { w: "ergo", pos: "Zarf / Bağlaç", m: "o halde, öyleyse, bundan dolayı" },
+      { w: "esse (sum, fui)", pos: "Kuralsız Fiil", m: "olmak, var olmak" },
+      { w: "essentia, -ae, f.", pos: "I. Çekim İsim", m: "öz, mahiyet" },
+      { w: "ethica, -ae, f.", pos: "I. Çekim İsim", m: "ahlak, ahlak felsefesi" },
+      { w: "existentia, -ae, f.", pos: "I. Çekim İsim", m: "varoluş, var olma" },
+      { w: "experientia, -ae, f.", pos: "I. Çekim İsim", m: "deneyim, tecrübe" },
+      { w: "fides, -ei, f.", pos: "V. Çekim İsim", m: "güven, inanç, sadakat" },
+      { w: "forma, -ae, f.", pos: "I. Çekim İsim", m: "biçim, şekil, form, model" },
+      { w: "fortuna, -ae, f.", pos: "I. Çekim İsim", m: "talih, şans, kader" },
+      { w: "gloria, -ae, f.", pos: "I. Çekim İsim", m: "şan, şöhret, onur" },
+      { w: "homo, hominis, m./f.", pos: "III. Çekim İsim", m: "insan, insanoğlu" },
+      { w: "idea, -ae, f.", pos: "I. Çekim İsim", m: "fikir, düşünce, idea" },
+      { w: "ignis, -is, m.", pos: "III. Çekim İsim", m: "ateş" },
+      { w: "imperium, -ii, n.", pos: "II. Çekim İsim", m: "buyruk, egemenlik, imparatorluk" },
+      { w: "inane, -is, n.", pos: "III. Çekim İsim", m: "boşluk (Lucretius'ta atomların hareket ettiği boşluk)" },
+      { w: "infinitus, -a, -um", pos: "I-II. Çekim Sıfat", m: "sınırsız, sonsuz" },
+      { w: "initium, -ii, n.", pos: "II. Çekim İsim", m: "başlangıç, köken, öğe" },
+      { w: "ius, iuris, n.", pos: "III. Çekim İsim", m: "hak, adalet, hukuk, yasa" },
+      { w: "iustitia, -ae, f.", pos: "I. Çekim İsim", m: "adalet, doğruluk" },
+      { w: "lex, legis, f.", pos: "III. Çekim İsim", m: "kanun, yasa" },
+      { w: "liber, libri, m.", pos: "II. Çekim İsim", m: "kitap" },
+      { w: "libertas, -atis, f.", pos: "III. Çekim İsim", m: "özgürlük, hürriyet" },
+      { w: "logica, -ae, f.", pos: "I. Çekim İsim", m: "mantık" },
+      { w: "lumen, luminis, n.", pos: "III. Çekim İsim", m: "ışık, nur, aydınlık (lumen naturale: doğal ışık)" },
+      { w: "lux, lucis, f.", pos: "III. Çekim İsim", m: "gün ışığı, ışık" },
+      { w: "magister, -tri, m.", pos: "II. Çekim İsim", m: "öğretmen, hoca, üstat" },
+      { w: "materia, -ae, f.", pos: "I. Çekim İsim", m: "madde, özdek, konu" },
+      { w: "memoria, -ae, f.", pos: "I. Çekim İsim", m: "hafıza, bellek" },
+      { w: "mens, mentis, f.", pos: "III. Çekim İsim", m: "zihin, akıl, düşünce, bilinç" },
+      { w: "metaphysica, -ae, f.", pos: "I. Çekim İsim", m: "metafizik, fizikötesi" },
+      { w: "mors, mortis, f.", pos: "III. Çekim İsim", m: "ölüm" },
+      { w: "mundus, -i, m.", pos: "II. Çekim İsim", m: "dünya, evren, kozmos" },
+      { w: "natura, -ae, f.", pos: "I. Çekim İsim", m: "doğa, tabiat, yaratılış" },
+      { w: "necessitas, -atis, f.", pos: "III. Çekim İsim", m: "zorunluluk, kaçınılmaz kader" },
+      { w: "nihilum, -i, n.", pos: "II. Çekim İsim", m: "hiç, hiçlik, yokluk" },
+      { w: "notio, -onis, f.", pos: "III. Çekim İsim", m: "kavram, nosyon, genel tasarım" },
+      { w: "ontologia, -ae, f.", pos: "I. Çekim İsim", m: "varlıkbilim, ontoloji" },
+      { w: "origo, originis, f.", pos: "III. Çekim İsim", m: "kaynak, köken, başlangıç" },
+      { w: "pax, pacis, f.", pos: "III. Çekim İsim", m: "barış, esenlik" },
+      { w: "perceptio, -onis, f.", pos: "III. Çekim İsim", m: "algı, idrak" },
+      { w: "philosophia, -ae, f.", pos: "I. Çekim İsim", m: "felsefe, bilgelik sevgisi" },
+      { w: "philosophus, -i, m.", pos: "II. Çekim İsim", m: "filozof, felsefeci" },
+      { w: "pietas, -atis, f.", pos: "III. Çekim İsim", m: "görev bilinci, bağlılık, vefa, dindarlık" },
+      { w: "potestas, -atis, f.", pos: "III. Çekim İsim", m: "güç, yeti, iktidar, erk" },
+      { w: "principium, -ii, n.", pos: "II. Çekim İsim", m: "başlangıç, köken, ilk ilke (Yun. arkhe)" },
+      { w: "quidditas, -atis, f.", pos: "III. Çekim İsim", m: "nelik, bir şeyin özü, mahiyeti" },
+      { w: "ratio, rationis, f.", pos: "III. Çekim İsim", m: "akıl, us, kavrama ve hesaplama yetisi, oran" },
+      { w: "realitas, -atis, f.", pos: "III. Çekim İsim", m: "gerçeklik, realite" },
+      { w: "res, rei, f.", pos: "V. Çekim İsim", m: "şey, olgu, gerçeklik, mesele, devlet (res publica)" },
+      { w: "sapientia, -ae, f.", pos: "I. Çekim İsim", m: "bilgelik, hikmet, sağduyu" },
+      { w: "scientia, -ae, f.", pos: "I. Çekim İsim", m: "bilim, kesin bilgi" },
+      { w: "sententia, -ae, f.", pos: "I. Çekim İsim", m: "düşünce, yargı, cümle, özdeyiş" },
+      { w: "spes, spei, f.", pos: "V. Çekim İsim", m: "ümit, umut" },
+      { w: "spiritus, -us, m.", pos: "IV. Çekim İsim", m: "ruh, soluk, esin" },
+      { w: "substantia, -ae, f.", pos: "I. Çekim İsim", m: "töz, cevher, öz" },
+      { w: "tempus, temporis, n.", pos: "III. Çekim İsim", m: "zaman, çağ, mevsim" },
+      { w: "unitas, -atis, f.", pos: "III. Çekim İsim", m: "birlik, bir olma durumu" },
+      { w: "veritas, -atis, f.", pos: "III. Çekim İsim", m: "hakikat, doğruluk, gerçeklik" },
+      { w: "virtus, virtutis, f.", pos: "III. Çekim İsim", m: "erdem, fazilet, yiğitlik, kudret" },
+      { w: "vita, -ae, f.", pos: "I. Çekim İsim", m: "yaşam, hayat, ömür" }
+    ];
+
+    function renderDictionary(query = "") {
+      const q = query.trim().toLocaleLowerCase("tr-TR");
+      const filtered = q
+        ? LATIN_DICT.filter((d) =>
+            d.w.toLocaleLowerCase("tr-TR").includes(q) ||
+            d.m.toLocaleLowerCase("tr-TR").includes(q) ||
+            d.pos.toLocaleLowerCase("tr-TR").includes(q)
+          )
+        : LATIN_DICT;
+      document.getElementById("dictCountBadge").textContent = `${filtered.length} Sözcük`;
+      document.getElementById("dictGrid").innerHTML = filtered.map((d) => `
+        <div class="dict-item">
+          <div class="dict-top">
+            <span class="dict-word">${escapeHtml(d.w)} <button type="button" class="speak-btn" onclick="speakLatin('${escapeHtml(d.w.split(',')[0])}', this)" title="Telaffuzu Dinle">🔊</button></span>
+            <span class="dict-pos">${escapeHtml(d.pos)}</span>
+          </div>
+          <div style="font-size:0.74rem;color:var(--gold);font-style:italic;">Okunuşu: [${escapeHtml(toClassicalPhonetic(d.w.split(',')[0]))}]</div>
+          <div class="dict-meaning">${escapeHtml(d.m)}</div>
+        </div>
+      `).join("");
+    }
+
+    document.getElementById("dictSearchInput").addEventListener("input", (e) => renderDictionary(e.target.value));
+
+    let quizMode = "sozluk";
+    let quizScore = 0;
+    let quizStreak = 0;
+    let currentQuestion = null;
+
+    function shuffle(arr) {
+      const copy = [...arr];
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    }
+
+    const GRAMMAR_QUESTIONS = [
+      { q: "Klasik Latincede 'Cicero' ve 'Cogito' kelimelerindeki C harfi nasıl okunur?", opts: ["K sesiyle (Kikero / Kogito)", "S sesiyle (Sisero / Sojito)", "Ç sesiyle (Çiçero)", "C sesiyle (Cicero)"], a: "K sesiyle (Kikero / Kogito)", exp: "Klasik Latincede C harfi her zaman sert 'k' sesi verir." },
+      { q: "Bir ismin hangi çekim grubuna (I–V) girdiğini anlamak için hangi haline bakılır?", opts: ["Tekil Genetivus (-in hali)", "Tekil Nominativus (Yalın hal)", "Çoğul Dativus (-e hali)", "Tekil Vocativus (Hitap hali)"], a: "Tekil Genetivus (-in hali)", exp: "Sözlüklerde isimden sonra verilen tekil genetivus eki (-ae, -i, -is, -us, -ei) çekim grubunu belirler." },
+      { q: "'Poeta, agricola, nauta' kelimeleri -a ile bitmelerine rağmen hangi cinstendir?", opts: ["Eril (Masculinum)", "Dişil (Femininum)", "Cinssiz (Neutrum)", "Çekimsiz"], a: "Eril (Masculinum)", exp: "I. çekimde olmalarına rağmen meslek/erkek bildiren bu isimler kural dışı olarak erildir." },
+      { q: "Geçişli bir fiilin doğrudan etkilediği nesne hangi halde bulunur?", opts: ["Accusativus (-i hali)", "Genetivus (-in hali)", "Nominativus (Yalın hal)", "Vocativus (Hitap hali)"], a: "Accusativus (-i hali)", exp: "Latincede fiilin doğrudan nesnesi Accusativus halindedir (Librum legit)." },
+      { q: "'Esse' (olmak/var olmak) fiilinin Şimdiki Zaman 1. çoğul şahıs ('biziz/varız') çekimi hangisidir?", opts: ["sumus", "estis", "sunt", "eramus"], a: "sumus", exp: "sum (benim), es (sensin), est (odur), sumus (biziz), estis (sizsiniz), sunt (onlardır)." },
+      { q: "'Bonus' (iyi) sıfatının en üstünlük derecesi (Superlativus: 'en iyi') hangisidir?", opts: ["optimus", "melior", "maximus", "pessimus"], a: "optimus", exp: "bonus (iyi) → melior (daha iyi) → optimus (en iyi)." }
+    ];
+
+    const QUOTE_QUESTIONS = [
+      { q: "'Cogito, ergo sum' özdeyişinin tam karşılığı nedir?", opts: ["Düşünüyorum, öyleyse varım.", "Şüphe ediyorum, öyleyse biliyorum.", "Yaşıyorum, öyleyse düşünüyorum.", "Öğreniyorum, öyleyse varım."], a: "Düşünüyorum, öyleyse varım.", exp: "René Descartes'ın ünlü felsefi önermesi." },
+      { q: "'Ex nihilo nihil fit' ilkesi ne anlama gelir?", opts: ["Hiçlikten hiçbir şey doğmaz.", "Her şey hiçliğe döner.", "Bilgi deneyden doğar.", "Doğa boşluktan nefret eder."], a: "Hiçlikten hiçbir şey doğmaz.", exp: "Lucretius'un De Rerum Natura eserinde işlediği atomcu temel ilke." },
+      { q: "'Non scholae, sed vitae discimus' sözünün anlamı nedir?", opts: ["Okul için değil, hayat için öğreniyoruz.", "Hayat kısa, sanat uzundur.", "Tecrübe en iyi öğretmendir.", "Bilgelik erdemin başıdır."], a: "Okul için değil, hayat için öğreniyoruz.", exp: "Seneca'ya atfedilen ünlü eğitim özdeyişi." },
+      { q: "'Homo homini lupus est' özdeyişi ne demektir?", opts: ["İnsan insanın kurdudur.", "İnsan düşünen bir hayvandır.", "İnsan kendinin ölçüsüdür.", "İnsan toplum için yaratılmıştır."], a: "İnsan insanın kurdudur.", exp: "Plautus'un Asinaria oyununda geçen ve Hobbes'un da kullandığı meşhur söz." },
+      { q: "'Dum anima est, spes est' sözünün Türkçe karşılığı nedir?", opts: ["Can (nefes) oldukça ümit vardır.", "Ruh ölümsüzdür.", "Zaman her şeyi iyileştirir.", "Umut çiftçiyi besler."], a: "Can (nefes) oldukça ümit vardır.", exp: "Çıkmamış candan ümit kesilmez anlamındaki klasik Latin atasözü." }
+    ];
+
+    function generateQuestion() {
+      if (quizMode === "sozluk") {
+        const target = LATIN_DICT[Math.floor(Math.random() * LATIN_DICT.length)];
+        const distractors = shuffle(LATIN_DICT.filter((d) => d.m !== target.m)).slice(0, 3);
+        const options = shuffle([target, ...distractors]).map((o) => o.m);
+        return {
+          prompt: "Bu Latince felsefi kavramın Türkçe anlamı nedir?",
+          displayBig: target.w,
+          options,
+          answer: target.m,
+          explain: `${target.w} (${target.pos}): ${target.m}`
+        };
+      }
+
+      if (quizMode === "cekim") {
+        const item = GRAMMAR_QUESTIONS[Math.floor(Math.random() * GRAMMAR_QUESTIONS.length)];
+        return {
+          prompt: item.q,
+          displayBig: "Grammatica Latina",
+          options: shuffle(item.opts),
+          answer: item.a,
+          explain: item.exp
+        };
+      }
+
+      if (quizMode === "sayi") {
+        const samples = [4, 9, 14, 18, 19, 24, 40, 49, 75, 90, 450, 753, 1637];
+        const n = samples[Math.floor(Math.random() * samples.length)];
+        const roman = toRoman(n);
+        const wrong = shuffle(samples.filter((x) => x !== n)).slice(0, 3);
+        return {
+          prompt: `Roma rakamıyla "${roman}" biçiminde yazılan sayı kaçtır?`,
+          displayBig: roman,
+          options: shuffle([n, ...wrong]).map(String),
+          answer: String(n),
+          explain: `${roman} = ${n} (${toLatinNumberWords(n)})`
+        };
+      }
+
+      const item = QUOTE_QUESTIONS[Math.floor(Math.random() * QUOTE_QUESTIONS.length)];
+      return {
+        prompt: item.q,
+        displayBig: "Aureae Sententiae",
+        options: shuffle(item.opts),
+        answer: item.a,
+        explain: item.exp
+      };
+    }
+
+    function renderQuizQuestion() {
+      currentQuestion = generateQuestion();
+      const area = document.getElementById("quizArea");
+      area.innerHTML = `
+        <div style="background:var(--bg-imperial);border:1px solid var(--gold-dim);border-radius:12px;padding:1rem;margin-bottom:0.85rem;text-align:center;">
+          <div style="font-size:0.88rem;color:var(--text-muted);margin-bottom:0.35rem;">${escapeHtml(currentQuestion.prompt)}</div>
+          <div class="latin-serif" style="font-size:1.75rem;font-weight:700;color:var(--gold-light);">${escapeHtml(currentQuestion.displayBig)}</div>
+        </div>
+        <div id="quizOptions">
+          ${currentQuestion.options.map((opt) => `
+            <button type="button" class="quiz-option" data-opt="${escapeHtml(opt)}">${escapeHtml(opt)}</button>
+          `).join("")}
+        </div>
+        <div id="quizFeedback" style="font-size:0.85rem;min-height:1.4em;margin-top:0.5rem;"></div>
+        <div style="margin-top:0.65rem;text-align:right;">
+          <button type="button" class="btn btn-gold" id="nextQuestionBtn">Sonraki Soru →</button>
+        </div>
+      `;
+
+      area.querySelectorAll(".quiz-option").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const chosen = btn.dataset.opt;
+          const isCorrect = chosen === currentQuestion.answer;
+          area.querySelectorAll(".quiz-option").forEach((b) => {
+            b.disabled = true;
+            if (b.dataset.opt === currentQuestion.answer) b.classList.add("correct");
+          });
+          if (!isCorrect) btn.classList.add("wrong");
+
+          const fb = document.getElementById("quizFeedback");
+          if (isCorrect) {
+            quizStreak++;
+            const earned = 10 + (quizStreak >= 3 ? 5 : 0);
+            quizScore += earned;
+            fb.style.color = "var(--success)";
+            fb.textContent = `✓ Doğru! (+${earned} Puan) — ${currentQuestion.explain}`;
+            syncScoreToCloud(earned, true);
+          } else {
+            quizStreak = 0;
+            fb.style.color = "var(--danger)";
+            fb.textContent = `✕ Yanlış. Doğrusu: ${currentQuestion.explain}`;
+            syncScoreToCloud(0, false);
+          }
+          document.getElementById("quizScoreBadge").textContent = `Puan: ${quizScore} · Seri: ${quizStreak}`;
+        });
+      });
+
+      document.getElementById("nextQuestionBtn").addEventListener("click", renderQuizQuestion);
+    }
+
+    document.getElementById("quizModeRow").addEventListener("click", (e) => {
+      const pill = e.target.closest(".pill");
+      if (!pill) return;
+      document.querySelectorAll("#quizModeRow .pill").forEach((p) => p.classList.remove("active"));
+      pill.classList.add("active");
+      quizMode = pill.dataset.qmode;
+      renderQuizQuestion();
+    });
+
+    loadLocalProfile();
+    initFirebase();
+    renderAlphabet();
+    renderDeclension("dec1");
+    renderCasesOverview();
+    renderVerbTable();
+    updateRomanBox(1637);
+    renderCalendarInfo();
+    renderReadings();
+    renderDictionary("");
+    renderQuizQuestion();
+  </script>
+</body>
+</html>
